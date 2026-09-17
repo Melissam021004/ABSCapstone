@@ -1,0 +1,30 @@
+# Pin these once they install cleanly, and commit the pinned file.
+# Reproducibility is one of your three stated novelty claims — a floating
+# dependency set undermines it.
+
+# --- ingestion (scripts 00-08) ---
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14.0
+requests>=2.31
+pybaseball>=2.2.7
+
+# --- modelling (Weeks 7-10) ---
+scikit-learn>=1.3
+statsmodels>=0.14
+catboost>=1.2
+lightgbm>=4.0
+pygam>=0.9          # GAM; alternatively use mgcv in R via rpy2
+
+# --- dashboard (Week 12) ---
+dash>=2.14
+plotly>=5.18
+
+# --- notebooks ---
+jupyterlab
+matplotlib>=3.7
+seaborn>=0.13
+
+# --- optional ---
+# shap>=0.44        # Week 8 feature importance
+# tqdm              # progress bars on the long pulls
