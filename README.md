@@ -136,9 +136,6 @@ sources above, which are subject to MLB's terms of use.
 
 ## Timeline and milestones
 
-Status as of October 2026. The full week-by-week fall plan is in
-[`WEEKLY_PLAN.md`](WEEKLY_PLAN.md).
-
 ### Fall 2026: build and validate the foundation
 
 | Date | Milestone | Status |
@@ -258,7 +255,7 @@ hand-built SVG charts, no framework or server
 ## About
 
 Built by **Melissa Martinez** as a Master's capstone project, Fall 2026 – Spring 2027.
-<!-- Add your LinkedIn, email or portfolio links here. -->
+[https://www.linkedin.com/in/melissammartinez/]
 
 This is independent academic work. It is not affiliated with or endorsed by
 Major League Baseball.
