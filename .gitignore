@@ -1,0 +1,26 @@
+# Raw and processed data never goes in git — it's large, it's re-derivable from
+# the scripts, and MLB data has terms of use. The MANIFEST is the exception:
+# it's how you prove which snapshot produced which result.
+data/*
+!data/raw/MANIFEST.json
+!data/.gitkeep
+
+# model artifacts
+models/*.pkl
+models/*.cbm
+models/*.txt
+!models/.gitkeep
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+*.egg-info/
+
+# os / editor
+.DS_Store
+.vscode/
+.idea/

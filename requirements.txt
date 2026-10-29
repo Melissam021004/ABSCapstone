@@ -1,0 +1,45 @@
+# Pin these once they install cleanly, and commit the pinned file.
+# Reproducibility is one of your three stated novelty claims — a floating
+# dependency set undermines it.
+
+# --- ingestion (scripts 00-08) ---
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14.0
+requests>=2.31
+pybaseball>=2.2.7
+
+# --- modelling (Weeks 7-10) ---
+<<<<<<< HEAD
+scikit-learn>=1.3
+statsmodels>=0.14
+catboost>=1.2
+lightgbm>=4.0
+pygam>=0.9          # GAM; alternatively use mgcv in R via rpy2
+=======
+scipy>=1.10         # Week 7's logistic + GAM (src/abs_models.py) need only numpy/scipy
+scikit-learn>=1.4    # 1.4+: HistGradientBoosting reads pandas categoricals (Week 8 stand-in)
+catboost>=1.2        # Week 8. On a Mac, conda is more reliable:
+lightgbm>=4.0        #   conda install -c conda-forge catboost lightgbm
+# Week 9's locked model pins the exact versions it was built with in
+# models/production/requirements-lock.txt
+# statsmodels>=0.14 # optional: cross-check src/abs_models.py's logistic (see tests/)
+# pygam>=0.9        # optional: not needed — src/abs_models.py has its own GAM
+>>>>>>> 35bc728 (Add recent updates)
+
+# --- dashboard (Week 12) ---
+dash>=2.14
+plotly>=5.18
+
+# --- notebooks ---
+jupyterlab
+matplotlib>=3.7
+seaborn>=0.13
+
+# --- optional ---
+<<<<<<< HEAD
+# shap>=0.44        # Week 8 feature importance
+=======
+# shap              # not needed: CatBoost and LightGBM compute SHAP values natively
+>>>>>>> 35bc728 (Add recent updates)
+# tqdm              # progress bars on the long pulls
