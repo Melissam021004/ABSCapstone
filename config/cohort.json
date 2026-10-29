@@ -1,0 +1,592 @@
+{
+  "frozen_at": "2026-10-08T13:54:31",
+  "source_table": "data/processed/challenge_inventory_2026.parquet",
+  "rows_in": 720209,
+  "rows_out": 370909,
+  "retention_pct": 51.5,
+  "cohort_fingerprint": "419af01ad9eee03f",
+  "split": {
+    "train": [
+      "2026-03-01",
+      "2026-07-31"
+    ],
+    "validate": [
+      "2026-08-01",
+      "2026-08-31"
+    ],
+    "test": [
+      "2026-09-01",
+      "2026-12-31"
+    ]
+  },
+  "split_counts": {
+    "train": 252016,
+    "validate": 63649,
+    "test": 55244
+  },
+  "rules": [
+    {
+      "rule": "called_pitches_only",
+      "kept": 373339,
+      "dropped": 346870,
+      "justification": "A challenge can only follow a taken pitch. Swings are not challengeable, so they carry no information about the decision."
+    },
+    {
+      "rule": "drop_position_player_pitching",
+      "kept": 371421,
+      "dropped": 1918,
+      "justification": "Challenges are not available while a position player pitches, so these rows have a structurally impossible outcome."
+    },
+    {
+      "rule": "require_pitch_location",
+      "kept": 371236,
+      "dropped": 185,
+      "justification": "Without a location there is no distance-from-zone feature, which is the model's primary input."
+    },
+    {
+      "rule": "require_abs_zone_from_height",
+      "kept": 370909,
+      "dropped": 327,
+      "justification": "Rows falling back to Statcast's zone have a different zone definition. Keeping them would mix two measurement systems in one feature."
+    },
+    {
+      "rule": "require_challenge_inventory",
+      "kept": 370909,
+      "dropped": 0,
+      "justification": "The inventory is the MDP's state variable; a row without it cannot be used for either the behaviour model or the policy."
+    },
+    {
+      "rule": "regular_season_only",
+      "kept": 370909,
+      "dropped": 0,
+      "justification": "Postseason challenge behaviour may differ and the sample is small. Revisit in Spring if you want a postseason transportability test."
+    }
+  ],
+  "missingness": [
+    {
+      "column": "estimated_slg_using_speedangle",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "umpire",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "swing_length",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "bat_speed",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "attack_angle",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "attack_direction",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "swing_path_tilt",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "launch_speed_angle",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "intercept_ball_minus_batter_pos_x_inches",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "intercept_ball_minus_batter_pos_y_inches",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "estimated_ba_using_speedangle",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "launch_angle",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "spin_dir",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "hit_distance_sc",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "sv_id",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "launch_speed",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "tfs_zulu_deprecated",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "tfs_deprecated",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "spin_rate_deprecated",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "break_angle_deprecated",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "break_length_deprecated",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "bb_type",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "miss_distance",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "hc_x",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "hc_y",
+      "n_null": 370909,
+      "pct_null": 100.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "hyper_speed",
+      "n_null": 370856,
+      "pct_null": 99.99,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "challenger_role",
+      "n_null": 363039,
+      "pct_null": 97.88,
+      "treatment": "structural",
+      "note": "Only exists once a challenge happened."
+    },
+    {
+      "column": "challenger_id",
+      "n_null": 363039,
+      "pct_null": 97.88,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenger_name",
+      "n_null": 363039,
+      "pct_null": 97.88,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenging_side",
+      "n_null": 363039,
+      "pct_null": 97.88,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "is_overturned",
+      "n_null": 363012,
+      "pct_null": 97.87,
+      "treatment": "structural",
+      "note": "Null on unchallenged pitches by design."
+    },
+    {
+      "column": "challenge_call_code",
+      "n_null": 363012,
+      "pct_null": 97.87,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenge_description",
+      "n_null": 363012,
+      "pct_null": 97.87,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "hit_location",
+      "n_null": 361057,
+      "pct_null": 97.34,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "estimated_woba_using_speedangle",
+      "n_null": 345703,
+      "pct_null": 93.2,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "des",
+      "n_null": 345635,
+      "pct_null": 93.19,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "woba_denom",
+      "n_null": 345398,
+      "pct_null": 93.12,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "events",
+      "n_null": 345339,
+      "pct_null": 93.11,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "babip_value",
+      "n_null": 345339,
+      "pct_null": 93.11,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "iso_value",
+      "n_null": 345339,
+      "pct_null": 93.11,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "woba_value",
+      "n_null": 345339,
+      "pct_null": 93.11,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "on_3b",
+      "n_null": 337359,
+      "pct_null": 90.95,
+      "treatment": "structural",
+      "note": "Null means the base is empty."
+    },
+    {
+      "column": "on_2b",
+      "n_null": 303119,
+      "pct_null": 81.72,
+      "treatment": "structural",
+      "note": "Null means the base is empty."
+    },
+    {
+      "column": "on_1b",
+      "n_null": 256198,
+      "pct_null": 69.07,
+      "treatment": "structural",
+      "note": "Null means the base is empty."
+    },
+    {
+      "column": "catcher_rv_tot",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_16",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_11",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_12",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_13",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_14",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "pitcher_days_until_next_game",
+      "n_null": 26398,
+      "pct_null": 7.12,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "pitcher_days_since_prev_game",
+      "n_null": 20833,
+      "pct_null": 5.62,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "batter_days_until_next_game",
+      "n_null": 8479,
+      "pct_null": 2.29,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "batter_days_since_prev_game",
+      "n_null": 7364,
+      "pct_null": 1.99,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "leverage_index",
+      "n_null": 6474,
+      "pct_null": 1.75,
+      "treatment": "impute_or_flag",
+      "note": "Plate-appearance grain; a few pitches may not match. Add a missing-indicator rather than dropping the row."
+    },
+    {
+      "column": "arm_angle",
+      "n_null": 4258,
+      "pct_null": 1.15,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "hp_umpire",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "ump_accuracy",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "impute_or_flag",
+      "note": "Umpires with few games. Flag, don't drop."
+    },
+    {
+      "column": "ump_borderline_accuracy",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "impute_or_flag",
+      "note": "Same."
+    },
+    {
+      "column": "ump_missed_strike_rate",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "impute_or_flag",
+      "note": "Same."
+    },
+    {
+      "column": "hp_umpire_id",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "ump_missed_ball_rate",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "impute_or_flag",
+      "note": "Same."
+    },
+    {
+      "column": "home_win_prob_added",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "bat_win_prob",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "away_win_prob",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "home_win_prob",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "if_fielding_alignment",
+      "n_null": 774,
+      "pct_null": 0.21,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "of_fielding_alignment",
+      "n_null": 774,
+      "pct_null": 0.21,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "release_spin_rate",
+      "n_null": 585,
+      "pct_null": 0.16,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "spin_axis",
+      "n_null": 583,
+      "pct_null": 0.16,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "pitcher_pos",
+      "n_null": 571,
+      "pct_null": 0.15,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "effective_speed",
+      "n_null": 353,
+      "pct_null": 0.1,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "release_extension",
+      "n_null": 352,
+      "pct_null": 0.09,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "delta_run_exp",
+      "n_null": 3,
+      "pct_null": 0.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "delta_pitcher_run_exp",
+      "n_null": 3,
+      "pct_null": 0.0,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    }
+  ]
+}

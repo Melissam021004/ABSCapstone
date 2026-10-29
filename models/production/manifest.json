@@ -1,0 +1,147 @@
+{
+  "name": "abs-overturn-pmodel",
+  "date": "2026.10.29",
+  "created": "2026-10-29T16:01:08",
+  "model_key": "GAM-loc",
+  "model_label": "GAM \u00b7 location",
+  "family": "gam",
+  "feature_set": "location",
+  "features": [
+    "edge",
+    "call_dir",
+    "dist_against_call"
+  ],
+  "state_fields": [
+    "plate_x",
+    "plate_z",
+    "batter_height_ft",
+    "called_strike"
+  ],
+  "calibration": {
+    "method": "none",
+    "describe": "no calibration \u2014 the model's own probabilities",
+    "n_fit": 1435,
+    "fitted_on": "August (the calibration window)"
+  },
+  "cohort_fingerprint": "419af01ad9eee03f",
+  "call_check": {
+    "n_challenges": 7897,
+    "n_with_side": 7870,
+    "n_upheld": 3453,
+    "n_overturned": 4417,
+    "agree_upheld": 1.0,
+    "agree_overturned": 0.0,
+    "repair": true,
+    "n_repaired": 4417,
+    "verdict": "FINAL (post-review) call recorded \u2014 repaired from who challenged"
+  },
+  "windows": {
+    "train": {
+      "from": "2026-03-25",
+      "to": "2026-07-31",
+      "challenges": 5219
+    },
+    "calibration": {
+      "from": "2026-08-01",
+      "to": "2026-08-31",
+      "challenges": 1435
+    },
+    "test": {
+      "challenges": 1243
+    }
+  },
+  "metrics": {
+    "august_crossfit": {
+      "brier": 0.01065855865639699,
+      "brier_skill": 0.9566170541368766,
+      "log_loss": 0.03537388477076921,
+      "cal_intercept": -0.3308250582835744,
+      "cal_slope": 0.9780493642969631,
+      "ece": 0.0033682797500368387,
+      "auc": 0.9992722756809561,
+      "ece_floor": 0.002566792210016846,
+      "midrange": {
+        "n": 41,
+        "mean_pred": 0.5246554305388852,
+        "obs_rate": 0.4878048780487805,
+        "ci_lo": 0.3425418723993569,
+        "ci_hi": 0.6351574068413481
+      }
+    },
+    "august_crossfit_uncalibrated": {
+      "brier": 0.01065855865639699,
+      "brier_skill": 0.9566170541368766,
+      "log_loss": 0.03537388477076921,
+      "cal_intercept": -0.3308250582835744,
+      "cal_slope": 0.9780493642969631,
+      "ece": 0.0033682797500368387,
+      "auc": 0.9992722756809561,
+      "ece_floor": 0.002566792210016846,
+      "midrange": {
+        "n": 41,
+        "mean_pred": 0.5246554305388852,
+        "obs_rate": 0.4878048780487805,
+        "ci_lo": 0.3425418723993569,
+        "ci_hi": 0.6351574068413481
+      }
+    },
+    "september": {
+      "brier": 0.00874403285841983,
+      "brier_skill": 0.9643342666794498,
+      "log_loss": 0.040461202114946505,
+      "cal_intercept": -0.10568903346860076,
+      "cal_slope": 0.898944469527695,
+      "ece": 0.0027551191571830716,
+      "auc": 0.9983061596596465,
+      "midrange": {
+        "n": 41,
+        "mean_pred": 0.49971479697127935,
+        "obs_rate": 0.5121951219512195,
+        "ci_lo": 0.36484259315865186,
+        "ci_hi": 0.657458127600643
+      }
+    }
+  },
+  "test_window": {
+    "opened": true,
+    "opened_at": "2026-10-29T16:03:39",
+    "times_opened": 1,
+    "challenges": 1243,
+    "from": "2026-09-01",
+    "to": "2026-09-27"
+  },
+  "week8": {
+    "baseline_to_beat": "GAM-loc",
+    "candidate_location": "GAM-loc",
+    "candidate_full": "GAM-full",
+    "generated": "2026-10-29T16:00:57"
+  },
+  "decision": {
+    "headline": "p(s) = GAM \u00b7 location + uncalibrated",
+    "why_model": "Location only, per the Week 7 decision: ABS rules on the ball's position alone, the policy will be asked about pitches nobody challenged, and features describing who chose to challenge would make a policy that judges challenge decisions circular.",
+    "why_candidate": "GAM \u00b7 location is Week 8's location only candidate: the simplest model whose August Brier can't be told apart from the best model with the same features.",
+    "why_calibration": "No calibrator earned its place: neither Platt scaling nor isotonic regression improved the cross-fitted August Brier by more than the noise, so the model's own probabilities are used (fewer moving parts).",
+    "subgroups": "0 of 22 testable slices are off by more than chance (about 1.1 would be by luck alone)."
+  },
+  "seed": 2026,
+  "relocked_after_test": false,
+  "files": {
+    "calibrator.json": "956e00c1857af5825d84c9de6baeae3d226261106eeb3ed8a1f749f60d04f6d7",
+    "model/model.pkl": "d16bf08e2923aa1217b036880068781090aeb0dc803acbb27be827819bcc6b87",
+    "participant_rates.json": "0e577d9569b2a6f40ad58565134435f7f39430d1f860539a385fd1f9f37a5c96",
+    "requirements-lock.txt": "fde710ed9d8e75c00617ac0fd0e6c0c58420faa7af2ce329ce0cbf8cd52e4613"
+  },
+  "versions": {
+    "python": "3.13.13",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.1",
+    "catboost": "1.2.10",
+    "lightgbm": "4.6.0"
+  },
+  "content_hash": "b81183b4d5eb25a9e1ea195a49e0edeb5c683407bf57cd7e50016373c4514f95",
+  "version": "2026.10.29-b81183b4",
+  "selfcheck_max_gap": 0.0,
+  "selfcheck_geometry_mismatches": 0
+}

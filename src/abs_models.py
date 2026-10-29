@@ -413,8 +413,11 @@ class GAM:
                 self.note = (f"chosen λ={self.lam:g} is the largest in the grid; "
                              "widen `lambdas` upward")
         elif self.lam == self.lambdas[0]:
-            self.note = (f"chosen λ={self.lam:g} is the smallest in the grid — the curves "
-                         "may be under-smoothed; widen `lambdas` downward")
+            self.note = (f"chosen λ={self.lam:g} is the smallest in the grid — REML wanted "
+                         "as little smoothing as the grid allows, i.e. a curve that bends "
+                         "very sharply (a near-step at the zone edge). The fit is as "
+                         "flexible as its knots let it be; widen `lambdas` downward or add "
+                         "knots near zero to let it bend further")
         return self
 
     def predict(self, df):

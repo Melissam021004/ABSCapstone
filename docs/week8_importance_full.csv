@@ -1,0 +1,26 @@
+feature,importance,label,block
+dist_against_call,4.165433557503791,inches against the call,location
+challenger_role,0.5663005855203967,who challenged,people
+edge,0.5488655890997642,nearest edge,location
+pitch_type,0.3723493712955465,pitch type,pitch
+fielder_2,0.2919941286775947,catcher ID,identity
+hp_umpire_id,0.15192179585636695,umpire ID,identity
+plate_z,0.12386058185043415,vertical location,location
+pitcher,0.10928780028107973,pitcher ID,identity
+plate_x,0.10310706813772733,horizontal location,location
+pfx_z,0.08339732423214645,vertical break,pitch
+batter,0.07434695196940987,batter ID,identity
+catcher_acc_pp,0.06562002853701016,catcher-game accuracy,people
+ump_acc_pp,0.06535003720711023,umpire accuracy,people
+log_leverage,0.05073813825929428,leverage,situation
+pfx_x,0.049965203905063774,horizontal break,pitch
+balls,0.04806421353012944,balls,situation
+release_speed,0.043848786203222107,velocity,pitch
+strikes,0.035719140639048144,strikes,situation
+batter_height_ft,0.029703924286102825,batter height,location
+inning,0.028301000384325932,inning,situation
+call_dir,0.011042107979452369,call (ball / strike),location
+outs_when_up,0.009234866883991465,outs,situation
+stand,0.00729247214959953,batter hand,pitch
+chal_left,0.006341488876101591,challenges left,situation
+p_throws,0.0038971903878291005,pitcher hand,pitch

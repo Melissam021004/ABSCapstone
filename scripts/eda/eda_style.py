@@ -17,6 +17,7 @@ exact plotted values. That is the "table view": it keeps the numbers reachable,
 and it means you can quote a figure precisely when someone asks in Q&A.
 """
 
+import logging
 import re
 from pathlib import Path
 
@@ -25,6 +26,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import pandas as pd
+
+# Text fonts, best first. Ones not installed on this machine are skipped, and
+# DejaVu Sans (bundled with matplotlib) is the backstop for symbols.
+_FONTS = ("Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans")
+# A listed font that isn't installed (Helvetica on Windows/Linux) makes
+# matplotlib log "findfont: Font family ... not found" — expected, harmless,
+# and the next font is used — so keep that out of the console.
+logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 
 # ----------------------------------------------------------------- palette
 # Validated categorical slots (first three are safe for scatter/all-pairs forms).
@@ -86,9 +95,15 @@ def apply_style(bg="transparent"):
         "savefig.facecolor": face,
         "savefig.transparent": transparent,
         "axes.facecolor": face,
-        "font.family": "sans-serif",
-        "font.sans-serif": ["Helvetica Neue", "Helvetica", "Arial",
-                            "DejaVu Sans", "sans-serif"],
+        # font.family as an explicit LIST turns on matplotlib's per-glyph
+        # fallback (mpl >= 3.6): text is set in the first font that exists,
+        # and any character that font lacks (★ ← → ≈ ≤ Δ ρ) is drawn from the
+        # next one down. DejaVu Sans ships with matplotlib and has all of them,
+        # so the "Glyph ... missing from font(s) Helvetica Neue" warnings and
+        # the empty boxes they leave in the figures both go away. With the old
+        # setting ("sans-serif") matplotlib picked ONE font and had no fallback.
+        "font.family": list(_FONTS),
+        "font.sans-serif": list(_FONTS) + ["sans-serif"],
         "font.size": 12,
         "text.color": INK,
         "axes.titlesize": 17,

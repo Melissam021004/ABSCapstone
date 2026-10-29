@@ -73,6 +73,7 @@ from src.abs_features import (BLOCKS, UNITS, add_features,  # noqa: E402
                               challenge_rows, describe_call_check, load_cohort,
                               participant_rates, split_masks)
 from src.abs_models import GAM, Logistic, lr_test                  # noqa: E402
+from src.abs_pipeline import resolve_fingerprint                   # noqa: E402
 
 DATA_DIR = Path(os.environ.get("ABS_DATA_DIR", "data"))
 DOCS = Path(os.environ.get("ABS_DOCS_DIR", "docs"))
@@ -257,11 +258,10 @@ def main():
     # ------------------------------------------------------------ 1. data
     banner("1. Load the frozen Week 6 cohort")
     raw = load_cohort(DATA_DIR)
-    fingerprint = "unknown"
-    cj = CONFIG / "cohort.json"
-    if cj.exists():
-        fingerprint = json.loads(cj.read_text()).get("cohort_fingerprint", "unknown")
+    fingerprint, fp_note = resolve_fingerprint(raw, CONFIG)
     print(f"  {len(raw):,} called pitches · cohort fingerprint {fingerprint}")
+    if fp_note:
+        print(f"  ({fp_note})")
 
     df, call_check = add_features(raw, return_check=True)
     for line in describe_call_check(call_check):

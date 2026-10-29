@@ -1,0 +1,11 @@
+view,mode,rows,columns
+catching-team,for,30,6
+catching-team,against,30,6
+team-summary,for,30,6
+team-summary,against,30,6
+catcher,for,72,9
+catcher,against,72,9
+pitcher,against,150,9
+pitcher,for,150,9
+batter,for,210,9
+batter,against,210,9

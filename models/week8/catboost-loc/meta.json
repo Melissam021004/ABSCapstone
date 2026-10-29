@@ -1,0 +1,34 @@
+{
+  "backend": "catboost",
+  "numeric": [
+    "dist_against_call",
+    "call_dir",
+    "plate_x",
+    "plate_z",
+    "batter_height_ft"
+  ],
+  "categorical": [
+    "edge"
+  ],
+  "params": {
+    "depth": 5,
+    "learning_rate": 0.05,
+    "l2_leaf_reg": 5,
+    "random_strength": 5,
+    "bagging_temperature": 0.5
+  },
+  "seed": 2026,
+  "max_rounds": 3000,
+  "patience": 100,
+  "monotone": true,
+  "monotone_note": "",
+  "levels": {
+    "edge": [
+      "side",
+      "bottom",
+      "top"
+    ]
+  },
+  "best_iteration": 586,
+  "es_logloss": 0.030893422478415405
+}

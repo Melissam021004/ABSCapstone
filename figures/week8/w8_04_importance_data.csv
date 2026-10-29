@@ -1,0 +1,19 @@
+feature_set,model,kind,rank,feature,label,block,importance
+location,lightgbm-loc,shap,1,dist_against_call,inches against the call,location,6.2691768122375695
+location,lightgbm-loc,shap,2,plate_z,vertical location,location,0.36845853405152884
+location,lightgbm-loc,shap,3,plate_x,horizontal location,location,0.35324291729918106
+location,lightgbm-loc,shap,4,call_dir,call (ball / strike),location,0.3497415298538174
+location,lightgbm-loc,shap,5,batter_height_ft,batter height,location,0.07452364784769269
+location,lightgbm-loc,shap,6,edge,nearest edge,location,0.04596803715398193
+full,catboost-full,shap,1,dist_against_call,inches against the call,location,4.165433557503791
+full,catboost-full,shap,2,challenger_role,who challenged,people,0.5663005855203967
+full,catboost-full,shap,3,edge,nearest edge,location,0.5488655890997642
+full,catboost-full,shap,4,pitch_type,pitch type,pitch,0.3723493712955465
+full,catboost-full,shap,5,fielder_2,catcher ID,identity,0.2919941286775947
+full,catboost-full,shap,6,hp_umpire_id,umpire ID,identity,0.15192179585636695
+full,catboost-full,shap,7,plate_z,vertical location,location,0.12386058185043415
+full,catboost-full,shap,8,pitcher,pitcher ID,identity,0.10928780028107973
+full,catboost-full,shap,9,plate_x,horizontal location,location,0.10310706813772733
+full,catboost-full,shap,10,pfx_z,vertical break,pitch,0.08339732423214645
+full,catboost-full,shap,11,batter,batter ID,identity,0.07434695196940987
+full,catboost-full,shap,12,catcher_acc_pp,catcher-game accuracy,people,0.06562002853701016

@@ -247,10 +247,16 @@ def main():
     sel, models = load_week8()
     for line in describe_call_check(data["call_check"]):
         print(f"  {line}")
+    print(f"  cohort fingerprint {data['fingerprint']}"
+          + (f"  ({data['fingerprint_note']})" if data["fingerprint_note"] else ""))
     if sel.get("cohort_fingerprint") != data["fingerprint"]:
-        raise SystemExit(f"  The cohort changed since Week 8 (Week 8 used "
-                         f"{sel.get('cohort_fingerprint')}, now {data['fingerprint']}).\n"
-                         "  Re-run scripts/16_week8_boosting.py so both weeks use the same data.")
+        why = ("Week 8 ran before the cohort fingerprint was recorded (it says 'unknown')"
+               if sel.get("cohort_fingerprint") in (None, "unknown") else
+               f"The cohort changed since Week 8 (Week 8 used {sel.get('cohort_fingerprint')}, "
+               f"now {data['fingerprint']})")
+        raise SystemExit(f"  {why}.\n  Re-run scripts/16_week8_boosting.py (or "
+                         "scripts/run_week89.py) so both weeks are checked against the same "
+                         "cohort.")
     cands = {"location": sel["candidate_location"], "full": sel["candidate_full"]}
     labels = {k: m["label"] for k, m in sel["models"].items()}
     family = {k: m["family"] for k, m in sel["models"].items()}
@@ -358,18 +364,25 @@ def main():
             with open(Path(folder) / "model.pkl", "wb") as fh:
                 pickle.dump(pmodel, fh)
 
+    old = None
     if PROD.exists():
         old = json.loads((PROD / "manifest.json").read_text()).get("version", "unknown") \
             if (PROD / "manifest.json").exists() else "unknown"
         HISTORY.mkdir(parents=True, exist_ok=True)
-        dest = HISTORY / old
-        if dest.exists():
-            shutil.rmtree(dest)
-        shutil.move(str(PROD), str(dest))
-        print(f"  previous lock {old} kept in {dest}")
+        if (HISTORY / old).exists():
+            shutil.rmtree(HISTORY / old)
+        shutil.move(str(PROD), str(HISTORY / old))
     manifest = write_bundle(PROD, model=pmodel, calibrator=pcal, rates=data["rates"],
                             league=data["league"], manifest_extra=manifest_extra,
                             model_files=save_model)
+    if old is not None:
+        if old == manifest["version"]:
+            # same files -> same version: nothing about the model changed
+            shutil.rmtree(HISTORY / old, ignore_errors=True)
+            print(f"  re-locked: identical to the previous lock (same model files, same "
+                  f"version)")
+        else:
+            print(f"  previous lock {old} kept in {HISTORY / old}")
     # Prove the bundle reproduces what we just scored: load it back through the
     # public interface and predict August from the RAW columns.
     pm = load_production(PROD)
@@ -515,7 +528,13 @@ def final_test(args):
     pm = load_production(PROD)
     manifest = pm.manifest
     data = load_challenges(DATA_DIR, CONFIG, include_test=True)
-    if manifest["cohort_fingerprint"] != data["fingerprint"]:
+    if manifest.get("cohort_fingerprint") != data["fingerprint"]:
+        if manifest.get("cohort_fingerprint") in (None, "unknown"):
+            raise SystemExit(
+                "  p(s) was locked before the cohort fingerprint was recorded (its manifest says "
+                "'unknown'),\n  so nothing confirms September would be scored on the same "
+                "cohort. Re-lock first:\n      python scripts/run_week89.py\n  then run "
+                "--final-test. September is still sealed — nothing was opened.")
         raise SystemExit("  The cohort changed since p(s) was locked. Re-lock first.")
     tr, va, te = data["tr"], data["va"], data["te"]
     sel, models = load_week8()

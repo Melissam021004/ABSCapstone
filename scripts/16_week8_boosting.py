@@ -226,6 +226,8 @@ def main():
     tr, va, n_test = data["tr"], data["va"], data["n_test"]
     for line in describe_call_check(data["call_check"]):
         print(f"  {line}")
+    print(f"  cohort fingerprint {data['fingerprint']}"
+          + (f"  ({data['fingerprint_note']})" if data["fingerprint_note"] else ""))
     print(f"  challenges: train {len(tr):,} · August {len(va):,} · September {n_test:,} (sealed)")
     if len(tr) < 300 or len(va) < 50:
         raise SystemExit("  Too few challenges to tune boosted models. Check the Week 6 split.")
@@ -270,8 +272,8 @@ def main():
     banner(f"2. Tune {', '.join(FAMILY_LABEL[b] for b in backends)} "
            f"({args.trials} settings each, per feature set)")
     es = es_mask_by_date(tr)
-    print(f"  trees chosen on the last {es.mean():.0%} of training games "
-          f"({tr.loc[es, 'game_date'].min():%b %d} – {tr['game_date'].max():%b %d}); "
+    print(f"  trees chosen on the last 15% of training games ({es.mean():.0%} of its challenges, "
+          f"{tr.loc[es, 'game_date'].min():%b %d} – {tr['game_date'].max():%b %d}); "
           f"settings compared on August")
     log = []
     for b in backends:
@@ -353,7 +355,7 @@ def main():
             "detail": imps.get("full", {}).get("leak_txt", ""),
             "auc_gap_full_minus_location": auc_gap,
             "auc_gap_warning": bool(auc_gap > 0.02)}
-    print(f"  AUC, everything minus location only: {auc_gap:+.3f}"
+    print(f"  AUC, everything minus location only: {f(auc_gap, 3, True)}"
           + ("   <- more than 0.02: check for a leak" if auc_gap > 0.02 else ""))
 
     # ---------------------------------------------------------- 6. write
@@ -469,9 +471,10 @@ def build_report(**k):
         w("  **HistGradientBoosting stands in for a library that isn't installed** — install "
           "CatBoost and LightGBM and re-run for the plan's comparison.")
     es = k["es"]
-    w(f"- Number of trees chosen on the last {es.mean():.0%} of training games "
-      f"({k['tr'].loc[es, 'game_date'].min():%b %d} – {k['tr']['game_date'].max():%b %d}), then "
-      "every model refit on the whole training window. August only compares settings.\n")
+    w(f"- Number of trees chosen on the last 15% of training games ({es.mean():.0%} of its "
+      f"challenges, {k['tr'].loc[es, 'game_date'].min():%b %d} – "
+      f"{k['tr']['game_date'].max():%b %d}), then every model refit on the whole training "
+      "window. August only compares settings.\n")
 
     # 1 ---------------------------------------------------------------
     w("## 1. The Week 7 ladder, refit\n")

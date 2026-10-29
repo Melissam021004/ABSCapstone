@@ -1,0 +1,36 @@
+{
+  "backend": "lightgbm",
+  "numeric": [
+    "dist_against_call",
+    "call_dir",
+    "plate_x",
+    "plate_z",
+    "batter_height_ft"
+  ],
+  "categorical": [
+    "edge"
+  ],
+  "params": {
+    "num_leaves": 15,
+    "learning_rate": 0.05,
+    "min_child_samples": 40,
+    "subsample": 1.0,
+    "colsample_bytree": 0.7,
+    "reg_lambda": 0,
+    "cat_smooth": 20
+  },
+  "seed": 2026,
+  "max_rounds": 3000,
+  "patience": 100,
+  "monotone": true,
+  "monotone_note": "",
+  "levels": {
+    "edge": [
+      "side",
+      "bottom",
+      "top"
+    ]
+  },
+  "best_iteration": 198,
+  "es_logloss": 0.03159011937404239
+}

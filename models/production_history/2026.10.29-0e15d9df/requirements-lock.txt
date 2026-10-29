@@ -1,0 +1,9 @@
+# Library versions this p(s) bundle was built and verified with.
+# Recreate the environment with:  pip install -r models/production/requirements-lock.txt
+numpy==2.5.3
+pandas==3.0.5
+scipy==1.18.0
+scikit-learn==1.9.1
+catboost==1.2.10
+lightgbm==4.6.0
+# python 3.13.13

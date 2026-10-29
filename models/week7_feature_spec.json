@@ -1,0 +1,285 @@
+{
+  "generated": "2026-10-29T15:56:55",
+  "cohort_fingerprint": "419af01ad9eee03f",
+  "data_dir": "data",
+  "n_challenges": {
+    "train": 5219,
+    "validate": 1435,
+    "test_sealed": 1243
+  },
+  "blocks": {
+    "location": {
+      "numeric": [],
+      "categorical": [
+        "edge"
+      ],
+      "slopes_by": {
+        "dist_against_call": "edge",
+        "call_dir": "edge"
+      }
+    },
+    "situation": {
+      "numeric": [
+        "balls",
+        "strikes",
+        "outs_when_up",
+        "inning",
+        "log_leverage",
+        "chal_left"
+      ],
+      "categorical": []
+    },
+    "pitch": {
+      "numeric": [
+        "release_speed",
+        "pfx_x",
+        "pfx_z",
+        "batter_height_ft"
+      ],
+      "categorical": [
+        "pitch_group",
+        "stand",
+        "p_throws"
+      ]
+    },
+    "people": {
+      "numeric": [
+        "pitcher_challenge",
+        "ump_acc_pp",
+        "catcher_acc_pp"
+      ],
+      "categorical": []
+    }
+  },
+  "models": {
+    "M0": {
+      "label": "M0 \u00b7 base rate",
+      "kind": "logistic",
+      "blocks": [],
+      "terms": [
+        "(intercept)"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": ""
+    },
+    "M1": {
+      "label": "M1 \u00b7 distance",
+      "kind": "logistic",
+      "blocks": [
+        "dist_against_call only"
+      ],
+      "terms": [
+        "(intercept)",
+        "dist_against_call"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": ""
+    },
+    "M2": {
+      "label": "M2 \u00b7 location",
+      "kind": "logistic",
+      "blocks": [
+        "location"
+      ],
+      "terms": [
+        "(intercept)",
+        "dist_against_call | edge=side",
+        "dist_against_call | edge=bottom",
+        "dist_against_call | edge=top",
+        "call_dir | edge=side",
+        "call_dir | edge=bottom",
+        "call_dir | edge=top",
+        "edge=bottom",
+        "edge=top"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": ""
+    },
+    "M3": {
+      "label": "M3 \u00b7 + situation",
+      "kind": "logistic",
+      "blocks": [
+        "location",
+        "situation"
+      ],
+      "terms": [
+        "(intercept)",
+        "balls",
+        "strikes",
+        "outs_when_up",
+        "inning",
+        "log_leverage",
+        "chal_left",
+        "dist_against_call | edge=side",
+        "dist_against_call | edge=bottom",
+        "dist_against_call | edge=top",
+        "call_dir | edge=side",
+        "call_dir | edge=bottom",
+        "call_dir | edge=top",
+        "edge=bottom",
+        "edge=top"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": ""
+    },
+    "M4": {
+      "label": "M4 \u00b7 + pitch",
+      "kind": "logistic",
+      "blocks": [
+        "location",
+        "situation",
+        "pitch"
+      ],
+      "terms": [
+        "(intercept)",
+        "balls",
+        "strikes",
+        "outs_when_up",
+        "inning",
+        "log_leverage",
+        "chal_left",
+        "release_speed",
+        "pfx_x",
+        "pfx_z",
+        "batter_height_ft",
+        "dist_against_call | edge=side",
+        "dist_against_call | edge=bottom",
+        "dist_against_call | edge=top",
+        "call_dir | edge=side",
+        "call_dir | edge=bottom",
+        "call_dir | edge=top",
+        "edge=bottom",
+        "edge=top",
+        "pitch_group=breaking",
+        "pitch_group=offspeed",
+        "stand=L",
+        "p_throws=L"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": ""
+    },
+    "M5": {
+      "label": "M5 \u00b7 + people",
+      "kind": "logistic",
+      "blocks": [
+        "location",
+        "situation",
+        "pitch",
+        "people"
+      ],
+      "terms": [
+        "(intercept)",
+        "balls",
+        "strikes",
+        "outs_when_up",
+        "inning",
+        "log_leverage",
+        "chal_left",
+        "release_speed",
+        "pfx_x",
+        "pfx_z",
+        "batter_height_ft",
+        "pitcher_challenge",
+        "ump_acc_pp",
+        "catcher_acc_pp",
+        "dist_against_call | edge=side",
+        "dist_against_call | edge=bottom",
+        "dist_against_call | edge=top",
+        "call_dir | edge=side",
+        "call_dir | edge=bottom",
+        "call_dir | edge=top",
+        "edge=bottom",
+        "edge=top",
+        "pitch_group=breaking",
+        "pitch_group=offspeed",
+        "stand=L",
+        "p_throws=L"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": ""
+    },
+    "GAM-loc": {
+      "label": "GAM \u00b7 location",
+      "kind": "gam",
+      "blocks": [
+        "location"
+      ],
+      "terms": [
+        "(intercept)",
+        "call_dir | edge=side",
+        "call_dir | edge=bottom",
+        "call_dir | edge=top",
+        "edge=bottom",
+        "edge=top"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": "chosen \u03bb=0.001 is the smallest in the grid \u2014 REML wanted as little smoothing as the grid allows, i.e. a curve that bends very sharply (a near-step at the zone edge). The fit is as flexible as its knots let it be; widen `lambdas` downward or add knots near zero to let it bend further",
+      "lambda": 0.001,
+      "edf": {
+        "s(dist_against_call | edge=side)": 4.109169352094085,
+        "s(dist_against_call | edge=bottom)": 2.8751341932695222,
+        "s(dist_against_call | edge=top)": 1.8414910032917924
+      }
+    },
+    "GAM-full": {
+      "label": "GAM \u00b7 everything",
+      "kind": "gam",
+      "blocks": [
+        "location",
+        "situation",
+        "pitch",
+        "people"
+      ],
+      "terms": [
+        "(intercept)",
+        "balls",
+        "strikes",
+        "outs_when_up",
+        "inning",
+        "log_leverage",
+        "chal_left",
+        "release_speed",
+        "pfx_x",
+        "pfx_z",
+        "batter_height_ft",
+        "pitcher_challenge",
+        "ump_acc_pp",
+        "catcher_acc_pp",
+        "call_dir | edge=side",
+        "call_dir | edge=bottom",
+        "call_dir | edge=top",
+        "edge=bottom",
+        "edge=top",
+        "pitch_group=breaking",
+        "pitch_group=offspeed",
+        "stand=L",
+        "p_throws=L"
+      ],
+      "folded_levels": {},
+      "dropped_columns": [],
+      "note": "chosen \u03bb=0.001 is the smallest in the grid \u2014 REML wanted as little smoothing as the grid allows, i.e. a curve that bends very sharply (a near-step at the zone edge). The fit is as flexible as its knots let it be; widen `lambdas` downward or add knots near zero to let it bend further",
+      "lambda": 0.001,
+      "edf": {
+        "s(dist_against_call | edge=side)": 4.087027055084572,
+        "s(dist_against_call | edge=bottom)": 2.888715052253958,
+        "s(dist_against_call | edge=top)": 1.8037410309529844
+      }
+    }
+  },
+  "participant_rates": {
+    "league_agreement": 0.9387935686623071,
+    "shrink": 200,
+    "source": "training-window called pitches only"
+  },
+  "baseline_to_beat": "GAM-loc",
+  "mdp_location_candidate": "GAM-loc",
+  "auc_zone_dist_in_raw": 0.4636546440949374,
+  "auc_dist_against_call": 0.9970961487499923
+}

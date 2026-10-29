@@ -1,0 +1,7 @@
+feature,importance,label,block
+dist_against_call,6.2691768122375695,inches against the call,location
+plate_z,0.36845853405152884,vertical location,location
+plate_x,0.35324291729918106,horizontal location,location
+call_dir,0.3497415298538174,call (ball / strike),location
+batter_height_ft,0.07452364784769269,batter height,location
+edge,0.04596803715398193,nearest edge,location

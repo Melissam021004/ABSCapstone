@@ -1,0 +1,200 @@
+{
+  "generated": "2026-10-29T16:00:57",
+  "cohort_fingerprint": "419af01ad9eee03f",
+  "call_check": {
+    "n_challenges": 7897,
+    "n_with_side": 7870,
+    "n_upheld": 3453,
+    "n_overturned": 4417,
+    "agree_upheld": 1.0,
+    "agree_overturned": 0.0,
+    "repair": true,
+    "n_repaired": 4417,
+    "verdict": "FINAL (post-review) call recorded \u2014 repaired from who challenged"
+  },
+  "baseline_to_beat": "GAM-loc",
+  "week7_reported_baseline": "GAM-loc",
+  "winner_all": "GAM-loc",
+  "candidate_location": "GAM-loc",
+  "candidate_full": "GAM-full",
+  "boosting_versions": {
+    "catboost": "1.2.10",
+    "lightgbm": "4.6.0"
+  },
+  "leak_check": {
+    "flagged": false,
+    "detail": "best location feature `inches against the call` ranks #1; best ID `catcher ID` #5",
+    "auc_gap_full_minus_location": -8.898802814394369e-05,
+    "auc_gap_warning": false
+  },
+  "importance_models": {
+    "location": "lightgbm-loc",
+    "full": "catboost-full"
+  },
+  "importance_kind": {
+    "location": "shap",
+    "full": "shap"
+  },
+  "models": {
+    "M0": {
+      "label": "M0 \u00b7 base rate",
+      "family": "logistic",
+      "feature_set": "location",
+      "path": "models/week8/M0.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.24568545183689397,
+      "august_logloss": 0.6844950272836131
+    },
+    "M1": {
+      "label": "M1 \u00b7 distance",
+      "family": "logistic",
+      "feature_set": "location",
+      "path": "models/week8/M1.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.020728909515321456,
+      "august_logloss": 0.09082058918568435
+    },
+    "M2": {
+      "label": "M2 \u00b7 location",
+      "family": "logistic",
+      "feature_set": "location",
+      "path": "models/week8/M2.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.02176375960167286,
+      "august_logloss": 0.09293938749105232
+    },
+    "M3": {
+      "label": "M3 \u00b7 + situation",
+      "family": "logistic",
+      "feature_set": "full",
+      "path": "models/week8/M3.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.021766878498546628,
+      "august_logloss": 0.0929469203558423
+    },
+    "M4": {
+      "label": "M4 \u00b7 + pitch",
+      "family": "logistic",
+      "feature_set": "full",
+      "path": "models/week8/M4.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.022023865916734157,
+      "august_logloss": 0.09354032704565754
+    },
+    "M5": {
+      "label": "M5 \u00b7 + people",
+      "family": "logistic",
+      "feature_set": "full",
+      "path": "models/week8/M5.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.02221480161921548,
+      "august_logloss": 0.09400245336115923
+    },
+    "GAM-loc": {
+      "label": "GAM \u00b7 location",
+      "family": "gam",
+      "feature_set": "location",
+      "path": "models/week8/GAM-loc.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.01065855865639699,
+      "august_logloss": 0.03537388477076921
+    },
+    "GAM-full": {
+      "label": "GAM \u00b7 everything",
+      "family": "gam",
+      "feature_set": "full",
+      "path": "models/week8/GAM-full.pkl",
+      "params": null,
+      "trees": null,
+      "monotone": null,
+      "august_brier": 0.011425081275746098,
+      "august_logloss": 0.03764704151895399
+    },
+    "catboost-loc": {
+      "label": "CatBoost \u00b7 location",
+      "family": "catboost",
+      "feature_set": "location",
+      "path": "models/week8/catboost-loc",
+      "params": {
+        "depth": 5,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 5,
+        "random_strength": 5,
+        "bagging_temperature": 0.5
+      },
+      "trees": 586,
+      "monotone": true,
+      "august_brier": 0.01056918559872185,
+      "august_logloss": 0.0368537612673022
+    },
+    "catboost-full": {
+      "label": "CatBoost \u00b7 everything",
+      "family": "catboost",
+      "feature_set": "full",
+      "path": "models/week8/catboost-full",
+      "params": {
+        "depth": 6,
+        "learning_rate": 0.08,
+        "l2_leaf_reg": 10,
+        "random_strength": 1,
+        "bagging_temperature": 0.5
+      },
+      "trees": 760,
+      "monotone": true,
+      "august_brier": 0.010512578979013467,
+      "august_logloss": 0.03633287539887692
+    },
+    "lightgbm-loc": {
+      "label": "LightGBM \u00b7 location",
+      "family": "lightgbm",
+      "feature_set": "location",
+      "path": "models/week8/lightgbm-loc",
+      "params": {
+        "num_leaves": 15,
+        "learning_rate": 0.05,
+        "min_child_samples": 40,
+        "subsample": 1.0,
+        "colsample_bytree": 0.7,
+        "reg_lambda": 0,
+        "cat_smooth": 20
+      },
+      "trees": 198,
+      "monotone": true,
+      "august_brier": 0.00992425813171033,
+      "august_logloss": 0.03380256312777199
+    },
+    "lightgbm-full": {
+      "label": "LightGBM \u00b7 everything",
+      "family": "lightgbm",
+      "feature_set": "full",
+      "path": "models/week8/lightgbm-full",
+      "params": {
+        "num_leaves": 15,
+        "learning_rate": 0.05,
+        "min_child_samples": 40,
+        "subsample": 1.0,
+        "colsample_bytree": 0.7,
+        "reg_lambda": 0,
+        "cat_smooth": 20
+      },
+      "trees": 143,
+      "monotone": true,
+      "august_brier": 0.011618986871869711,
+      "august_logloss": 0.04223940642080228
+    }
+  }
+}

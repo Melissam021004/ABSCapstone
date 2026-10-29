@@ -15,7 +15,8 @@ each source gives you.
 ```bash
 conda create -n abs python=3.11 -y && conda activate abs
 pip install pybaseball pandas numpy pyarrow requests
-pip install scipy scikit-learn matplotlib catboost lightgbm  # Weeks 7–10
+pip install scipy scikit-learn matplotlib                     # Weeks 7–10
+conda install -c conda-forge catboost lightgbm               # Week 8 (more reliable than pip on a Mac)
 pip install dash plotly                                        # Week 12
 ```
 
@@ -54,16 +55,38 @@ python scripts/run_week7.py            # 3 test files, then 15_week7_baseline.py
                                        # -> docs/WEEK7_BASELINE_REPORT.md + figures/week7/
 ```
 
+Weeks 8–9 — gradient boosting, then calibrate and lock p(s) (see `WEEK8.md` and
+`WEEK9.md`; they're due together, so one runner does both):
+
+```bash
+python tests/test_boosting_backends.py          # 30 s: do CatBoost and LightGBM work here?
+python scripts/run_week89.py --demo             # everything on a synthetic season, ~5 min
+python scripts/run_week89.py                    # tests -> Week 7 refresh -> 16 -> 17 -> dashboard
+python scripts/17_week9_calibrate_lock.py --final-test    # ONCE: the September test month
+```
+
+| Script | Produces |
+|---|---|
+| `16_week8_boosting.py` | `docs/WEEK8_REPORT.md`, `docs/week8_*.csv`, `figures/week8/`, `models/week8/` (+ `selection.json`) |
+| `17_week9_calibrate_lock.py` | `docs/WEEK9_REPORT.md`, `docs/MODEL_CARD.md`, `docs/week9_*.csv`, `figures/week9/`, `models/production/` |
+| `17_… --final-test` | `docs/WEEK9_TEST_RESULTS.md`, `docs/week9_test_*.csv`, `models/production/TEST_OPENED.json` |
+| `18_export_model_dashboard.py` | `dashboard/model_data.js` (the Overturn Model and Progress tabs) |
+
 Weeks 7–9 share one feature builder, one metric suite and one set of models in
-`src/` (`abs_features.py`, `abs_metrics.py`, `abs_models.py`), so every model in
-the project is built and graded by literally the same code. `figures_demo_week7/`
-shows the Week 7 outputs on synthetic data.
+`src/` (`abs_features.py`, `abs_metrics.py`, `abs_models.py`, `abs_baselines.py`),
+so every model in the project is built and graded by literally the same code.
+Week 8 adds `abs_boosting.py` and `abs_pipeline.py`; Week 9 adds
+`abs_calibration.py` and `abs_predict.py` — **the only module Weeks 10–12 should
+import for p(s)**: `from src.abs_predict import load_production`.
+`figures_demo_week7/`, `figures_demo_week8/` and `figures_demo_week9/` show the
+outputs on synthetic data.
 
 The dashboard — a static site you can host free on GitHub Pages
 (see `dashboard/README.md`):
 
 ```bash
 python scripts/12_export_dashboard_data.py     # Week 5 table -> dashboard/data.js
+python scripts/18_export_model_dashboard.py    # Weeks 7–9 results -> dashboard/model_data.js
 open dashboard/index.html
 python scripts/14_build_single_file.py         # one-file copy for email/archive
 ```

@@ -1,0 +1,25 @@
+id,severity,title,passed,detail,meaning,offenders
+TABLE_NOT_EMPTY,CRITICAL,Table has rows,True,"720,209 rows",Script 08 produced nothing. Check its inputs.,
+UNIQUE_PITCH_KEY,CRITICAL,One row per pitch,True,0 duplicate key rows,The same pitch appears twice. A merge fanned out — every count and rate downstream is inflated.,
+COUNT_IN_RANGE,CRITICAL,Counts are legal,True,0 rows outside balls 0-3 / strikes 0-2,A count outside these bounds means the pre-pitch state is wrong.,
+INVENTORY_IN_BOUNDS,CRITICAL,Challenges remaining within 0-2,True,"observed range 0-2, 0 violations","Teams start with 2 and the extra-inning grant only restores a side to 1, so nothing can ever exceed 2. This is r in your MDP.",
+INVENTORY_STARTS_AT_2,CRITICAL,Every game starts at 2 each,True,0 games start wrong,The per-game reset is broken — inventory is carrying across games.,
+NO_OPPORTUNITY_AT_ZERO,CRITICAL,No opportunity for a side with zero challenges,True,0 violations,"An opportunity requires a challenge in hand. If this fires, the denominator for your behaviour model is wrong.",
+NO_CHALLENGE_AT_ZERO,CRITICAL,Nobody challenges with zero left,False,4 challenges made with no challenge remaining,Either the inventory walk is wrong or a challenge event was mis-attributed to the wrong side.,docs/qa_failures/NO_CHALLENGE_AT_ZERO.csv
+SOME_CHALLENGES,CRITICAL,Challenges are present,True,"8,012 challenged pitches",No challenges matched onto pitches at all — the join failed.,
+CHALLENGED_ARE_CALLED,CRITICAL,Challenged pitches are called pitches,False,97 challenges on swung-at pitches,You can only challenge a taken pitch. These are join errors — most likely pitch_number is off by one.,docs/qa_failures/CHALLENGED_ARE_CALLED.csv
+CHALLENGER_ROLE_VALID,WARN,"Challenger is batter, catcher or pitcher",False,"119 of 8,012 (1.5%) with a missing or invalid role","Only those three may challenge, so a null role means the API payload had no reviewDetails.player. A few is normal and they drop out of any role-split analysis; above 2% suspect the extraction in script 02.",docs/qa_failures/CHALLENGER_ROLE_VALID.csv
+OUTCOME_PRESENT,WARN,Every challenge has an outcome,True,"0 of 8,012 (0.0%) missing is_overturned","is_overturned is your model target, so these rows cannot train anything and are excluded from every rate on this page. A handful is tolerable; more means script 02 is mis-reading the review payload.",
+FAILED_BUDGET,CRITICAL,No side exceeds its failed-challenge budget,True,0 game-sides over budget,A side can lose at most 2 in regulation plus 1 per extra inning. Over budget means the inventory never decremented.,
+ZONE_PREDICTS_OUTCOME,CRITICAL,ABS zone reproduces actual challenge outcomes,False,44.1% agreement (need >= 85%),"Your reconstructed ABS zone disagrees with what ABS actually ruled. The zone constants, the ball-radius rule or the batter heights are wrong — and every distance feature inherits the error.",docs/qa_failures/ZONE_PREDICTS_OUTCOME.csv
+JOIN_RATE,CRITICAL,Challenge events matched onto pitches,True,"8,012/8,312 matched (96.4%)",Unmatched challenges are usually the at_bat_number off-by-one (Statcast 1-based vs Stats API 0-based) or pitch numbering that counts pickoffs.,
+UMPIRE_COVERAGE,WARN,home-plate umpire coverage,True,99.5% populated (want >= 95%),A sparse home-plate umpire column means that covariate is mostly missing from the model.,
+HEIGHT_COVERAGE,WARN,batter height coverage,True,99.9% populated (want >= 95%),A sparse batter height column means that covariate is mostly missing from the model.,
+LEVERAGE_COVERAGE,WARN,leverage index coverage,True,98.2% populated (want >= 90%),A sparse leverage index column means that covariate is mostly missing from the model.,
+ZONE_FROM_HEIGHT,WARN,ABS zone built from batter height,True,99.9% of rows use batter height,Rows falling back to Statcast's sz_top/sz_bot have an approximated zone. Run 07_player_bios.py and rebuild.,
+OVERTURN_BAND,WARN,Overturn rate is plausible,True,55.7% (expected roughly 40-60%),Far outside this band suggests mis-parsed outcomes.,
+CATCHERS_BEAT_BATTERS,WARN,Catchers out-challenge batters,False,catcher 55.3% vs batter 57.8%,"MLB has publicly reported catchers are the most successful challengers. If your data says otherwise, suspect the data before the finding.",
+OPPORTUNITY_SHARE,WARN,Opportunity share near Savant's ~50%,True,49.8% of pitches,Savant reports about half of 2026 pitches are challenge opportunities. A big gap means the opportunity rule is off.,
+REASONABLE_SHARE,WARN,'Reasonable pitch' share near ~5%,True,5.0% of pitches,"Ours is a simplified version of Savant's definition, so some drift is expected — but not a lot.",
+OVERTURN_FALLS_WITH_DISTANCE,WARN,Overturn rate falls as pitches move from the zone edge,True,0-1in 52% | 1-2in 59% | 2-4in 61% | 4-8in 47% | 8+in 44%,"Calls far from the edge are obvious, so they should almost never be overturned. If this doesn't hold, the distance feature is wrong and Week 7's model has nothing to learn from.",
+LEVERAGE_MEAN,WARN,Mean leverage index near 1.0,True,mean 1.000,Leverage is scaled so the average plate appearance is 1.0.,

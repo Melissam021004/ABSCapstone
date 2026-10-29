@@ -8,6 +8,7 @@ The September test window comes back as None unless include_test=True. Only
 one place in the project asks for it, which makes an accidental peek hard.
 """
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -33,12 +34,39 @@ def _ensure_columns(df):
     return df, missing
 
 
+def cohort_fingerprint(df):
+    """
+    The Week 6 fingerprint, recomputed from the cohort itself: a hash of every
+    row's (game, at-bat, pitch) key, in order — exactly how
+    scripts/13_define_cohort.py computes the one it stores in config/cohort.json.
+    """
+    keys = df[["game_pk", "at_bat_number", "pitch_number"]]
+    return hashlib.sha256(pd.util.hash_pandas_object(keys, index=False)
+                          .values.tobytes()).hexdigest()[:16]
+
+
+def resolve_fingerprint(raw, config_dir):
+    """
+    (fingerprint, note). Uses the one Week 6 stored in config/cohort.json when it
+    exists and matches the cohort on disk; otherwise the one computed from the
+    cohort, with a note saying why — so the "same cohort as last week" checks in
+    Weeks 8 and 9 always compare something real.
+    """
+    computed = cohort_fingerprint(raw)
+    cj = Path(config_dir) / "cohort.json"
+    stored = json.loads(cj.read_text()).get("cohort_fingerprint") if cj.exists() else None
+    if stored is None:
+        return computed, (f"no {cj} — fingerprint computed from the cohort file; copy your "
+                          "Week 6 config/cohort.json here to record the frozen one")
+    if stored != computed:
+        return computed, (f"WARNING: the cohort file on disk ({computed}) is not the one Week 6 "
+                          f"froze ({stored}) — it changed after the freeze")
+    return stored, ""
+
+
 def load_challenges(data_dir, config_dir, include_test=False):
     raw = load_cohort(data_dir)
-    fingerprint = "unknown"
-    cj = Path(config_dir) / "cohort.json"
-    if cj.exists():
-        fingerprint = json.loads(cj.read_text()).get("cohort_fingerprint", "unknown")
+    fingerprint, fp_note = resolve_fingerprint(raw, config_dir)
     df, call_check = add_features(raw, return_check=True)
     tr_mask, _, _ = split_masks(df)
     df, league, rates = participant_rates(df, tr_mask)
@@ -50,7 +78,7 @@ def load_challenges(data_dir, config_dir, include_test=False):
         "n_test": int((ch["split"] == "test").sum()),
         "te": ch[ch["split"] == "test"].reset_index(drop=True) if include_test else None,
         "call_check": call_check, "league": league, "rates": rates,
-        "fingerprint": fingerprint, "missing_cols": missing,
+        "fingerprint": fingerprint, "fingerprint_note": fp_note, "missing_cols": missing,
         "n_called": int(len(df)),
     }
     return out
