@@ -806,6 +806,18 @@ def build_test_report(c):
         verdict = ("better" if dd[2] < 0 else "worse" if dd[1] > 0 else "can't tell apart")
         w(f"- {labels[k]} minus the baseline ({labels[c['base']]}): Δ Brier {dd[0]:+.4f} "
           f"[{dd[1]:+.4f}, {dd[2]:+.4f}] — {verdict}.")
+    if boosted:
+        better = [k for k in boosted if diffs[(k, c["base"])]["brier"][2] < 0]
+        if better:
+            w(f"- **Week 8's verdict on September:** {len(better)} of {len(boosted)} boosted "
+              f"models were reliably better than {labels[c['base']]} here, so August's \"no "
+              "boosted model beats the baseline\" did not fully replicate. Report it as found. "
+              "The locked p(s) stays: it was chosen before this look, and switching now would "
+              "turn September into a tuning set (WEEK9.md, \"If September disagrees with "
+              "August\").")
+        else:
+            w(f"- **Week 8's verdict on September:** held — no boosted model was reliably "
+              f"better than {labels[c['base']]}.")
     md = c["mid"]["PROD"]
     if md["n"]:
         w(f"- **Where decisions are made** (p(s) between 20% and 80%): predicted "

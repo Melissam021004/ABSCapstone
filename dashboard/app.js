@@ -94,6 +94,29 @@ function txt(parent, x, y, s, cls, anchor) {
   t.textContent = s;
   return t;
 }
+/** A bar path with a rounded data end and a square baseline end.
+    dir "right": grows rightward from x; dir "up": grows upward to y. */
+function barPath(x, y, w, h, dir, r) {
+  r = r === undefined ? 4 : r;
+  r = Math.max(0, Math.min(r, dir === "right" ? Math.min(h / 2, w) : Math.min(w / 2, h)));
+  if (dir === "right") {
+    return "M" + x + " " + y + "H" + (x + w - r) + "A" + r + " " + r + " 0 0 1 " + (x + w) + " " + (y + r) +
+           "V" + (y + h - r) + "A" + r + " " + r + " 0 0 1 " + (x + w - r) + " " + (y + h) + "H" + x + "Z";
+  }
+  return "M" + x + " " + (y + h) + "V" + (y + r) + "A" + r + " " + r + " 0 0 1 " + (x + r) + " " + y +
+         "H" + (x + w - r) + "A" + r + " " + r + " 0 0 1 " + (x + w) + " " + (y + r) + "V" + (y + h) + "Z";
+}
+/** White or dark text — whichever reads better on this fill (works in both themes). */
+function inkOn(fill) {
+  const m = String(fill).match(/^#([0-9a-f]{6})$/i);
+  const rgb = m ? [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16))
+                : (String(fill).match(/\d+(\.\d+)?/g) || [255, 255, 255]).slice(0, 3).map(Number);
+  const lum = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * lum(rgb[0]) + 0.7152 * lum(rgb[1]) + 0.0722 * lum(rgb[2]);
+  const dark = 0.016;                     // luminance of the dark text colour below
+  return (1.05 / (L + 0.05)) >= ((L + 0.05) / (dark + 0.05)) ? "#ffffff" : "#2a1f26";
+}
+
 /** Horizontal bars. rows: [{label, value, color?, note?}] */
 function barsH(host, rows, opts) {
   opts = opts || {};
@@ -106,9 +129,9 @@ function barsH(host, rows, opts) {
     txt(f.g, -10, y + rowH / 2, r.label, "val-label", "end")
       .setAttribute("fill", tok("--ink"));
     const bw = Math.max(1, (r.value / max) * f.iw);
-    const rect = mk("rect", {
-      x: 0, y: y + (rowH - bh) / 2, width: bw, height: bh,
-      fill: r.color || tok("--series-1"), rx: 1
+    const rect = mk("path", {
+      d: barPath(0, y + (rowH - bh) / 2, bw, bh, "right", 4),
+      fill: r.color || tok("--series-1")
     }, f.g);
     txt(f.g, bw + 8, y + rowH / 2, r.note || nf(r.value), "val-label", "start");
     const hit = mk("rect", { x: 0, y: y, width: f.iw, height: rowH, fill: "transparent" }, f.g);
@@ -125,7 +148,7 @@ function columns(host, rows, opts) {
   const w = 620, h = opts.h || 230;
   const f = frame(host, w, h, { t: 18, r: 8, b: 30, l: 42 });
   const max = Math.max.apply(null, rows.map(r => r.value)) || 1;
-  const step = f.iw / rows.length, bw = Math.min(opts.maxBar || 34, step - 8);
+  const step = f.iw / rows.length, bw = Math.min(opts.maxBar || 24, step - 8);
   [0, .5, 1].forEach(p => {
     const y = f.ih - p * f.ih;
     mk("line", { x1: 0, y1: y, x2: f.iw, y2: y, class: "tick-line" }, f.g);
@@ -135,8 +158,8 @@ function columns(host, rows, opts) {
   rows.forEach((r, i) => {
     const x = i * step + (step - bw) / 2;
     const bh = Math.max(1, (r.value / max) * f.ih);
-    mk("rect", { x: x, y: f.ih - bh, width: bw, height: bh,
-                 fill: r.color || tok("--series-1"), rx: 1 }, f.g);
+    mk("path", { d: barPath(x, f.ih - bh, bw, bh, "up", 4),
+                 fill: r.color || tok("--series-1") }, f.g);
     txt(f.g, x + bw / 2, f.ih + 15, r.label, "axis-label", "middle");
     const hit = mk("rect", { x: i * step, y: 0, width: step, height: f.ih,
                              fill: "transparent" }, f.g);
@@ -228,14 +251,16 @@ function heat(host, cells, rowLabels, colLabels, rowTitle, colTitle) {
     const fill = c.value === null ? tok("--deemph")
                : ramp[Math.min(6, Math.max(0, Math.round(rel * 6)))];
     mk("rect", { x: j * cw + 1, y: i * ch + 1, width: cw - 2, height: ch - 2,
-                 fill: fill }, f.g);
+                 rx: 8, ry: 8, fill: fill }, f.g);
+    const on = inkOn(fill);
     const t = txt(f.g, j * cw + cw / 2, i * ch + ch / 2 - 5,
                   c.value === null ? "—" : pct(c.value), "val-label", "middle");
-    t.setAttribute("fill", rel > .55 ? "#ffffff" : tok("--ink"));
+    t.style.fill = on;
     t.setAttribute("font-size", "14");
     const t2 = txt(f.g, j * cw + cw / 2, i * ch + ch / 2 + 12,
                    "n=" + nf(c.n), "axis-label", "middle");
-    t2.setAttribute("fill", rel > .55 ? "rgba(255,255,255,.8)" : tok("--ink-3"));
+    t2.style.fill = on;
+    t2.style.fillOpacity = ".75";
     const hit = mk("rect", { x: j * cw, y: i * ch, width: cw, height: ch,
                              fill: "transparent" }, f.g);
     hit.addEventListener("pointermove", (e) => showTip(e,
@@ -265,8 +290,8 @@ function histogram(host, values, lo, hi, nbins, xlabel, opts) {
   const step = f.iw / nbins;
   bins.forEach((n, i) => {
     const bh = (n / max) * f.ih;
-    mk("rect", { x: i * step + 1, y: f.ih - bh, width: step - 2, height: Math.max(0, bh),
-                 fill: tok("--series-1") }, f.g);
+    if (bh > 0) mk("path", { d: barPath(i * step + 1, f.ih - bh, step - 2, bh, "up", 3),
+                             fill: tok("--series-1") }, f.g);
     const hit = mk("rect", { x: i * step, y: 0, width: step, height: f.ih,
                              fill: "transparent" }, f.g);
     const a = (lo + i * bw).toFixed(1), b = (lo + (i + 1) * bw).toFixed(1);
@@ -279,7 +304,7 @@ function histogram(host, values, lo, hi, nbins, xlabel, opts) {
     const zx = ((0 - lo) / (hi - lo)) * f.iw;
     mk("line", { x1: zx, y1: 0, x2: zx, y2: f.ih, stroke: tok("--ink"),
                  "stroke-width": 1.5 }, f.g);
-    txt(f.g, zx + 5, 10, "zone edge", "axis-label", "start")
+    txt(f.g, zx + 5, 10, "zone edge", "axis-label halo", "start")
       .setAttribute("fill", tok("--ink-2"));
   }
   [0, .25, .5, .75, 1].forEach(p => {
@@ -485,23 +510,20 @@ function drawZone(ch) {
     mk("line", { x1: 0, y1: Y(gy), x2: f.iw, y2: Y(gy), class: "tick-line" }, f.g);
     txt(f.g, -8, Y(gy), dec(gy, 1), "axis-label", "end");
   }
-  mk("rect", { x: X(-HW - R), y: Y(top + R), width: X(HW + R) - X(-HW - R),
-               height: Y(bot - R) - Y(top + R), fill: "none",
-               stroke: tok("--ink-3"), "stroke-width": 1 }, f.g);
-  mk("rect", { x: X(-HW), y: Y(top), width: X(HW) - X(-HW),
-               height: Y(bot) - Y(top), fill: "none",
-               stroke: tok("--ink"), "stroke-width": 2 }, f.g);
-  txt(f.g, X(HW + R) + 6, Y(top + R), "ABS zone", "val-label", "start")
-    .setAttribute("fill", tok("--ink"));
-  txt(f.g, X(HW + R) + 6, Y(bot - R), "+ ball radius", "axis-label", "start");
+  // keep the dots inside the plot so they never spill over the text above it
+  const clipId = "zclip-" + Math.random().toString(36).slice(2, 8);
+  const cp = mk("clipPath", { id: clipId }, mk("defs", {}, f.svg));
+  mk("rect", { x: 0, y: 0, width: f.iw, height: f.ih }, cp);
+  const dots = mk("g", { "clip-path": "url(#" + clipId + ")" }, f.g);
+  const hits = mk("g", {}, f.g);
 
   pts.forEach(p => {
     const c = mk("circle", {
       cx: X(p.px), cy: Y(p.pz), r: 4.5,
       fill: p.ov ? tok("--series-2") : tok("--series-1"),
       "fill-opacity": .75, stroke: tok("--paper"), "stroke-width": 1
-    }, f.g);
-    const hit = mk("circle", { cx: X(p.px), cy: Y(p.pz), r: 12, fill: "transparent" }, f.g);
+    }, dots);
+    const hit = mk("circle", { cx: X(p.px), cy: Y(p.pz), r: 12, fill: "transparent" }, hits);
     hit.addEventListener("pointermove", (e) => showTip(e,
       tipRow(p.ov ? "Overturned" : "Call stood",
              (p.who || p.role) + " · " + p.b + "-" + p.s + " · " +
@@ -509,6 +531,17 @@ function drawZone(ch) {
     hit.addEventListener("pointerleave", hideTip);
     c.style.pointerEvents = "none";
   });
+  // the zone on top of the dots
+  const zr = [
+    mk("rect", { x: X(-HW - R), y: Y(top + R), width: X(HW + R) - X(-HW - R),
+                 height: Y(bot - R) - Y(top + R), fill: "none",
+                 stroke: tok("--ink-3"), "stroke-width": 1 }, f.g),
+    mk("rect", { x: X(-HW), y: Y(top), width: X(HW) - X(-HW),
+                 height: Y(bot) - Y(top), fill: "none",
+                 stroke: tok("--ink"), "stroke-width": 2 }, f.g),
+    txt(f.g, X(HW + R) + 6, Y(top + R), "ABS zone", "val-label halo", "start"),
+    txt(f.g, X(HW + R) + 6, Y(bot - R), "+ ball radius", "axis-label halo", "start")];
+  zr.forEach(e => { e.style.pointerEvents = "none"; });
   legend($("#l-zone"), [
     { label: "Call stood", color: tok("--series-1"), sq: true },
     { label: "Overturned", color: tok("--series-2"), sq: true }
@@ -534,8 +567,7 @@ function drawZoneCmp(ch) {
     const x = ((val - (-1)) / 3) * f.iw;
     mk("line", { x1: x, y1: 0, x2: x, y2: f.ih, stroke: tok("--series-2"),
                  "stroke-width": 1.5 }, f.g);
-    txt(f.g, x + 5, 22, label, "axis-label", "start")
-      .setAttribute("fill", tok("--series-2"));
+    txt(f.g, x + 5, 22, label, "axis-label halo", "start");
   });
 }
 

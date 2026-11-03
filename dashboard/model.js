@@ -156,12 +156,20 @@ function drawSurface() {
   // the 50% coin-flip line
   const segs = contour(grid, xs, zs, 0.5);
   if (segs.length) {
-    mk("path", { d: segs.map(s => "M" + X(s[0][0]) + " " + Y(s[0][1]) + "L" + X(s[1][0]) + " " +
-                                   Y(s[1][1])).join(""),
-                 fill: "none", stroke: tok("--ink"), "stroke-width": 1.6,
+    const cd = segs.map(s => "M" + X(s[0][0]) + " " + Y(s[0][1]) + "L" + X(s[1][0]) + " " +
+                             Y(s[1][1])).join("");
+    // a thin halo in the card colour keeps the line readable on every shade of the ramp
+    mk("path", { d: cd, fill: "none", stroke: tok("--paper"), "stroke-width": 4.2,
+                 "stroke-linecap": "round", "stroke-opacity": .85 }, f.g);
+    mk("path", { d: cd, fill: "none", stroke: tok("--ink"), "stroke-width": 1.6,
                  "stroke-linecap": "round" }, f.g);
   }
-  // the zone, and the zone plus the ball's radius
+  // the zone, and the zone plus the ball's radius (each over a halo, as above)
+  mk("rect", { x: X(-HW - RB), y: Y(H.top + RB), width: X(HW + RB) - X(-HW - RB),
+               height: Y(H.bot - RB) - Y(H.top + RB), fill: "none", stroke: tok("--paper"),
+               "stroke-width": 3, "stroke-opacity": .7 }, f.g);
+  mk("rect", { x: X(-HW), y: Y(H.top), width: X(HW) - X(-HW), height: Y(H.bot) - Y(H.top),
+               fill: "none", stroke: tok("--paper"), "stroke-width": 5, "stroke-opacity": .85 }, f.g);
   mk("rect", { x: X(-HW - RB), y: Y(H.top + RB), width: X(HW + RB) - X(-HW - RB),
                height: Y(H.bot - RB) - Y(H.top + RB), fill: "none", stroke: tok("--series-2"),
                "stroke-width": 1, "stroke-dasharray": "4 3" }, f.g);

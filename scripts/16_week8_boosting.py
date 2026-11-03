@@ -123,6 +123,14 @@ def f(x, d=3, sign=False):
     return f"{x:+.{d}f}" if sign else f"{x:.{d}f}"
 
 
+def fparams(x, sign=False):
+    """Parameter counts: whole numbers as integers (logistic), effective df to one decimal (GAM)."""
+    x = float(x)
+    if abs(x - round(x)) < 1e-9:
+        return f"{int(round(x)):+d}" if sign else f"{int(round(x))}"
+    return f"{x:+.1f}" if sign else f"{x:.1f}"
+
+
 def fci(v, ci, d=3, sign=False):
     lo, hi = ci
     if lo is None or not np.isfinite(lo):
@@ -483,7 +491,7 @@ def build_report(**k):
     for kk in ORDER:
         s, c = point[kk], ci[kk]
         star = " ★" if kk == baseline else ""
-        w(f"| {labels[kk]}{star} | {n_params(models[kk]):.1f} | {fci(s['brier'], c['brier'], 4)} | "
+        w(f"| {labels[kk]}{star} | {fparams(n_params(models[kk]))} | {fci(s['brier'], c['brier'], 4)} | "
           f"{f(s['log_loss'], 3)} | {fci(s['cal_intercept'], c['cal_intercept'], 2, True)} | "
           f"{fci(s['cal_slope'], c['cal_slope'], 2)} | {f(s['auc'], 3)} |")
     w(f"\n★ **Baseline to beat: {labels[baseline]}** (the Week 7 rule: simplest model whose "

@@ -2,7 +2,6 @@
 """
 01_statcast_pitches_2026.py — every 2026 MLB Statcast pitch.
 
-<<<<<<< HEAD
 This is the backbone table. Everything else joins onto it.
 
 Two independent paths to the same data:
@@ -21,16 +20,15 @@ skips chunks already downloaded. A full season is ~700-750k pitches and takes
     python 01_statcast_pitches_2026.py
 
     # resume after an interruption (just run it again)
-=======
-    python 01_statcast_pitches_2026.py --start 2026-04-15 --end 2026-04-15
     python 01_statcast_pitches_2026.py
->>>>>>> 35bc728 (Add recent updates)
-    python 01_statcast_pitches_2026.py
+
+    # Week 10 (optional): earlier seasons, for a bigger win-expectancy table
+    python 01_statcast_pitches_2026.py --season 2025
 
 Output:
     data/raw/statcast/chunks/statcast_<start>_<end>.parquet   (cache)
-    data/raw/statcast/statcast_2026_<YYYY-MM>.parquet         (monthly)
-    data/raw/statcast/statcast_2026_columns.txt
+    data/raw/statcast/statcast_<season>_<YYYY-MM>.parquet     (monthly)
+    data/raw/statcast/statcast_<season>_columns.txt
 """
 
 import argparse
@@ -48,15 +46,9 @@ DATA_DIR = Path(os.environ.get("ABS_DATA_DIR", "data"))
 OUT_DIR = DATA_DIR / "raw" / "statcast"
 CHUNK_DIR = OUT_DIR / "chunks"
 
-<<<<<<< HEAD
 # 2026 regular season. Adjust if you want spring training or the postseason.
 SEASON_START = "2026-03-25"
 SEASON_END = "2026-09-28"
-=======
-# 2026 regular season
-SEASON_START = "2026-03-24"
-SEASON_END = "2026-09-29"
->>>>>>> 35bc728 (Add recent updates)
 
 UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
@@ -77,7 +69,7 @@ def make_session():
     return s
 
 
-def savant_params(start, end, game_type="R|"):
+def savant_params(start, end, game_type="R|", season=2026):
     """
     Mirrors the parameter block Baseball Savant's own search form submits.
     Most of these must be present-but-empty or the endpoint returns nothing.
@@ -87,7 +79,7 @@ def savant_params(start, end, game_type="R|"):
         "all": "true",
         "hfPT": "", "hfAB": "", "hfGT": game_type, "hfPR": "", "hfZ": "",
         "hfStadium": "", "hfBBL": "", "hfNewZones": "", "hfC": "",
-        "hfSea": "2026|", "hfSit": "", "hfOuts": "", "hfOpponent": "",
+        "hfSea": f"{season}|", "hfSit": "", "hfOuts": "", "hfOpponent": "",
         "pitcher_throws": "", "batter_stands": "", "hfSA": "",
         "player_type": "pitcher",
         "game_date_gt": start,
@@ -102,16 +94,13 @@ def savant_params(start, end, game_type="R|"):
     }
 
 
-def fetch_direct(session, start, end, retries=4):
-<<<<<<< HEAD
+def fetch_direct(session, start, end, retries=4, season=2026, game_type="R|"):
     """Pull one chunk straight from the Savant CSV endpoint."""
-=======
-    """Pull one chunk from the Savant CSV endpoint."""
->>>>>>> 35bc728 (Add recent updates)
     last = None
     for attempt in range(retries):
         try:
-            r = session.get(SAVANT_CSV, params=savant_params(start, end), timeout=180)
+            r = session.get(SAVANT_CSV, params=savant_params(start, end, game_type, season),
+                            timeout=180)
             if r.status_code == 200:
                 if not r.content or len(r.content) < 200:
                     return pd.DataFrame()
@@ -151,8 +140,10 @@ def date_chunks(start, end, days):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--start", default=SEASON_START)
-    ap.add_argument("--end", default=SEASON_END)
+    ap.add_argument("--season", type=int, default=2026,
+                    help="season to pull (Week 10 can use earlier ones for win probability)")
+    ap.add_argument("--start", default=None, help=f"default: {SEASON_START} for 2026")
+    ap.add_argument("--end", default=None, help=f"default: {SEASON_END} for 2026")
     ap.add_argument("--method", choices=["auto", "pybaseball", "direct"], default="auto")
     ap.add_argument("--chunk-days", type=int, default=3,
                     help="days per request; smaller = more robust, slower")
@@ -161,6 +152,12 @@ def main():
                     help="'R|' regular, 'R|PO|' +postseason, 'S|' spring")
     ap.add_argument("--force", action="store_true", help="re-download cached chunks")
     args = ap.parse_args()
+    if args.start is None:
+        args.start = SEASON_START if args.season == 2026 else f"{args.season}-03-15"
+    if args.end is None:
+        args.end = SEASON_END if args.season == 2026 else f"{args.season}-10-05"
+    if not (args.start.startswith(str(args.season)) and args.end.startswith(str(args.season))):
+        sys.exit(f"--start/--end must be inside the {args.season} season")
 
     CHUNK_DIR.mkdir(parents=True, exist_ok=True)
     session = make_session()
@@ -200,7 +197,7 @@ def main():
                     use_pyb = False  # don't keep retrying a broken path
 
         if df is None:
-            df = fetch_direct(session, cs, ce)
+            df = fetch_direct(session, cs, ce, season=args.season, game_type=args.game_type)
             if df is None:
                 print("403 from Savant.")
                 print("      Savant is blocking you. Options: wait a few minutes, "
@@ -226,13 +223,9 @@ def main():
             print(f"    {cs} .. {ce}")
         return
 
-<<<<<<< HEAD
     # ---------------- consolidate into monthly parquet ----------------
-=======
-    # Sorting by month
->>>>>>> 35bc728 (Add recent updates)
     print("\nConsolidating into monthly files...")
-    files = sorted(CHUNK_DIR.glob("statcast_*.parquet"))
+    files = sorted(CHUNK_DIR.glob(f"statcast_{args.season}-*.parquet"))   # this season only
     if not files:
         sys.exit("No chunks on disk.")
 
@@ -247,11 +240,11 @@ def main():
     df = df.sort_values(key or ["game_date"]).reset_index(drop=True)
 
     for month, g in df.groupby(df["game_date"].dt.to_period("M")):
-        out = OUT_DIR / f"statcast_2026_{month}.parquet"
+        out = OUT_DIR / f"statcast_{args.season}_{month}.parquet"
         g.to_parquet(out, index=False)
         print(f"  {out.name}: {len(g):,} pitches")
 
-    (OUT_DIR / "statcast_2026_columns.txt").write_text(
+    (OUT_DIR / f"statcast_{args.season}_columns.txt").write_text(
         "\n".join(sorted(df.columns.tolist())))
 
     print(f"\nTotal: {len(df):,} pitches  ({before - len(df):,} duplicates dropped)")

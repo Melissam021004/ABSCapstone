@@ -24,7 +24,7 @@ WHAT IT FITS (all on the TRAINING window, March–July)
     GAM  everything           M5, likewise
 
 WHAT IT REPORTS (all on the VALIDATION window, August — the test window stays
-sealed until the end of Week 8)
+sealed until Week 9's --final-test opens it, once)
     Brier, Brier skill, log loss, calibration intercept and slope, ECE with its
     noise floor, a mid-range check, then AUC — each with a 95% interval from a
     bootstrap that resamples whole GAMES. Then: what each block adds (in-sample
@@ -105,6 +105,14 @@ def fci(v, ci, d=3, sign=False):
     if not np.isfinite(lo):
         return f(v, d, sign)
     return f"{f(v, d, sign)} [{f(lo, d, sign)}, {f(hi, d, sign)}]"
+
+
+def fparams(x, sign=False):
+    """Parameter counts: whole numbers as integers (logistic), effective df to one decimal (GAM)."""
+    x = float(x)
+    if abs(x - round(x)) < 1e-9:
+        return f"{int(round(x)):+d}" if sign else f"{int(round(x))}"
+    return f"{x:+.1f}" if sign else f"{x:.1f}"
 
 
 def pct(x, d=1):
@@ -341,6 +349,19 @@ def main():
         d_l = diffs[(big, small)]["log_loss"]
         d_a = diffs[(big, small)]["auc"]
         lr_stat, lr_df, lr_p = lr.get((big, small), (np.nan, np.nan, np.nan))
+        # The LR test needs two ordinary maximum-likelihood fits. Under (near-)
+        # separation a fit may need the weak prior, or stop short of its maximum —
+        # then the statistic isn't a likelihood ratio (a negative chi-square is the
+        # giveaway), so the p-value is withheld rather than printed as p=1.
+        lr_note = ""
+        if np.isfinite(lr_p):
+            pen = [MODEL_SPECS[kk][0] for kk in (small, big) if getattr(models[kk], "note", "")]
+            if pen:
+                lr_note = "needed the weak prior: " + ", ".join(pen)
+            elif lr_stat < -1e-6:
+                lr_note = "χ² < 0: a fit stopped short of its maximum"
+            if lr_note:
+                lr_p = np.nan
         if d_b[2] < 0:
             verdict = "better on new data"
         elif d_b[1] > 0:
@@ -355,11 +376,12 @@ def main():
         step_rows.append({
             "step": what, "bigger": big, "smaller": small,
             "params_added": n_params(models[big]) - n_params(models[small]),
-            "lr_chi2": lr_stat, "lr_df": lr_df, "lr_p": lr_p,
+            "lr_chi2": lr_stat, "lr_df": lr_df, "lr_p": lr_p, "lr_note": lr_note,
             "d_brier": d_b[0], "d_brier_lo": d_b[1], "d_brier_hi": d_b[2],
             "d_logloss": d_l[0], "d_logloss_lo": d_l[1], "d_logloss_hi": d_l[2],
             "d_auc": d_a[0], "verdict": verdict})
-        lr_txt = f"LR p={lr_p:.3g} (train)" if np.isfinite(lr_p) else "(not nested)"
+        lr_txt = (f"LR p={lr_p:.3g} (train)" if np.isfinite(lr_p)
+                  else "(LR not valid)" if lr_note else "(not nested)")
         print(f"  {what:<38} ΔBrier {d_b[0]:+.4f} [{d_b[1]:+.4f}, {d_b[2]:+.4f}]  "
               f"{lr_txt:<22} -> {verdict}")
     steps = pd.DataFrame(step_rows)
@@ -564,7 +586,8 @@ def build_report(**k):
     w("| window | dates | challenges | games | overturned |")
     w("|---|---|---:|---:|---:|")
     w("\n".join(rows))
-    w(f"| test | Sept → | {k['n_test']:,} | — | *sealed until the end of Week 8* |\n")
+    w(f"| test | Sept → | {k['n_test']:,} | — | *not used here — opened once, by Week 9's "
+      "`--final-test`* |\n")
     gap = va["y"].mean() - k["p_ref"]
     if abs(gap) > 0.03:
         w(f"**The overturn rate moved {100 * gap:+.1f} points between training and August.** "
@@ -619,7 +642,7 @@ def build_report(**k):
     w("|---|---:|---|---:|---|---|---|---|---|")
     for kk in ORDER:
         s, c = point[kk], ci[kk]
-        w(f"| {L[kk][0]} | {n_params(models[kk]):.1f} | {fci(s['brier'], c['brier'], 4)} | "
+        w(f"| {L[kk][0]} | {fparams(n_params(models[kk]))} | {fci(s['brier'], c['brier'], 4)} | "
           f"{f(s['brier_skill'], 3)} | {fci(s['log_loss'], c['log_loss'], 3)} | "
           f"{fci(s['cal_intercept'], c['cal_intercept'], 2, True)} | "
           f"{fci(s['cal_slope'], c['cal_slope'], 2)} | "
@@ -653,16 +676,29 @@ def build_report(**k):
     w("| step | params added | LR test (train) | Δ Brier (validation) [95%] | Δ log loss [95%] | verdict |")
     w("|---|---:|---|---|---|---|")
     for _, r in k["steps"].iterrows():
-        lrtxt = (f"χ²={r['lr_chi2']:.1f}, df={int(r['lr_df'])}, p={r['lr_p']:.2g}"
-                 if np.isfinite(r["lr_p"]) else "not nested")
+        if np.isfinite(r["lr_p"]):
+            lrtxt = f"χ²={r['lr_chi2']:.1f}, df={int(r['lr_df'])}, p={r['lr_p']:.2g}"
+        elif r.get("lr_note"):
+            lrtxt = f"not valid ({r['lr_note']})"
+        else:
+            lrtxt = "not nested"
         pa = r["params_added"] if abs(r["params_added"]) >= 0.05 else 0.0
-        w(f"| {r['step']} ({r['bigger']} vs {r['smaller']}) | {pa:+.1f} | {lrtxt} | "
+        w(f"| {r['step']} ({r['bigger']} vs {r['smaller']}) | {fparams(pa, sign=True)} | {lrtxt} | "
           f"{f(r['d_brier'], 4, True)} [{f(r['d_brier_lo'], 4, True)}, {f(r['d_brier_hi'], 4, True)}] | "
           f"{f(r['d_logloss'], 4, True)} [{f(r['d_logloss_lo'], 4, True)}, {f(r['d_logloss_hi'], 4, True)}] | "
           f"{r['verdict']} |")
     m1m0 = k["diffs"][("M1", "M0")]["brier"]
     w(f"\nFor scale: distance alone (M1 vs M0) changes Brier by {m1m0[0]:+.4f}. "
       "Everything after that is fine-tuning.\n")
+    m1_auc = k["point"]["M1"]["auc"] if "point" in k else np.nan
+    if k["steps"]["lr_note"].astype(bool).any() or (np.isfinite(m1_auc) and m1_auc > 0.99):
+        w("**About the LR column.** The likelihood-ratio test compares two ordinary "
+          "maximum-likelihood fits. Here location separates overturns from upheld calls almost "
+          f"perfectly (M1's validation AUC is {m1_auc:.3f}), and when outcomes are that close to "
+          "separable a logistic fit can need the weak prior or stop short of its maximum. Then "
+          "the statistic is no longer a likelihood ratio — a negative χ² is the giveaway — and "
+          "those rows say \"not valid\". Even where it is valid, near-separation makes the χ² "
+          "approximation unreliable, so read the validation columns.\n")
 
     # 6 ----------------------------------------------------------------
     w("## 6. The location model, in inches\n")
@@ -811,7 +847,7 @@ def build_report(**k):
     w("\n".join(notes) if notes else "- Every model converged without help.")
     w("- Intervals reflect how much each score would move with a different set of August "
       "games. They do not include the uncertainty from re-fitting the models.")
-    w("- The test window was not read. It is used once, at the end of Week 8.\n")
+    w("- The test window was not read here. It is opened once, by Week 9's `--final-test`.\n")
 
     # 12 ---------------------------------------------------------------
     w("## 12. Figures (`figures/week7/`)\n")

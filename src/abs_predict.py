@@ -103,7 +103,10 @@ FEATURE_NEEDS = {
     "hp_umpire_id": ("hp_umpire_id",), "fielder_2": ("fielder_2",),
     "pitcher": ("pitcher",), "batter": ("batter",),
 }
-RANGES = {"plate_x": (-3.0, 3.0), "plate_z": (-1.5, 7.0), "batter_height_ft": (4.5, 7.6),
+# Generous physical limits: a wild pitch can cross 3+ ft off the plate, and Week 10
+# asks p(s) about every called pitch, not only challenged ones. Values in inches
+# still fail (a typical pitch is 5-20 "units" off center in inches).
+RANGES = {"plate_x": (-5.0, 5.0), "plate_z": (-2.5, 8.0), "batter_height_ft": (4.5, 7.6),
           "balls": (0, 3), "strikes": (0, 2), "outs": (0, 2), "inning": (1, 30),
           "leverage_index": (0.0, 20.0), "challenges_left": (0, 10),
           "release_speed": (40.0, 110.0), "pfx_x": (-4.0, 4.0), "pfx_z": (-4.0, 4.0)}

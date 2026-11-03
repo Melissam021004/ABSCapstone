@@ -152,7 +152,8 @@ class Booster:
     """One gradient-boosted classifier; see the module docstring."""
 
     def __init__(self, backend, numeric, categorical, params=None, seed=2026,
-                 max_rounds=3000, patience=100, monotone=True, n_jobs=4):
+                 max_rounds=3000, patience=100, monotone=True, n_jobs=4,
+                 monotone_up=MONOTONE_UP):
         if backend not in BACKENDS:
             raise ValueError(f"backend must be one of {BACKENDS}")
         self.backend = backend
@@ -161,6 +162,9 @@ class Booster:
         self.params = dict(params or {})
         self.seed, self.max_rounds, self.patience = seed, max_rounds, patience
         self.monotone, self.n_jobs = monotone, n_jobs
+        # features the prediction may only INCREASE with (Week 8: distance against the
+        # call; Week 10's win-probability model: the home team's lead)
+        self.monotone_up = tuple(monotone_up)
         self.levels = {}
         self.monotone_note = ""
         self.best_iteration = None
@@ -196,7 +200,7 @@ class Booster:
         return X[self.features]
 
     def _monotone_vector(self):
-        return [1 if (self.monotone and f in MONOTONE_UP) else 0 for f in self.features]
+        return [1 if (self.monotone and f in self.monotone_up) else 0 for f in self.features]
 
     # ------------------------------------------------------------ fit
     def fit(self, df, y, es_mask=None, n_trees=None):
@@ -244,7 +248,7 @@ class Booster:
         # "Ordered" scheme, which it would otherwise pick on a dataset this small.
         # Constraints by NAME ({"dist_against_call": 1}) rather than one entry per
         # column, so CatBoost never sees a constraint slot for a categorical column.
-        mono = {f: 1 for f in self.numeric if self.monotone and f in MONOTONE_UP}
+        mono = {f: 1 for f in self.numeric if self.monotone and f in self.monotone_up}
         base = dict(loss_function="Logloss", eval_metric="Logloss", random_seed=self.seed,
                     verbose=False, allow_writing_files=False, thread_count=self.n_jobs,
                     boosting_type="Plain", **self.params)
@@ -285,7 +289,7 @@ class Booster:
 
     def _fit_hgb(self, Xa, ya, Xb, yb, probe):
         from sklearn.ensemble import HistGradientBoostingClassifier
-        cst = {f: 1 for f in self.features if self.monotone and f in MONOTONE_UP}
+        cst = {f: 1 for f in self.features if self.monotone and f in self.monotone_up}
         base = dict(categorical_features="from_dtype", early_stopping=False,
                     random_state=self.seed, monotonic_cst=cst or None, **self.params)
         if probe:
@@ -344,6 +348,7 @@ class Booster:
                 "categorical": self.categorical, "params": self.params,
                 "seed": self.seed, "max_rounds": self.max_rounds, "patience": self.patience,
                 "monotone": self.monotone, "monotone_note": self.monotone_note,
+                "monotone_up": list(self.monotone_up),
                 "levels": self.levels,
                 "best_iteration": self.best_iteration, "es_logloss": self.es_logloss}
 
@@ -368,7 +373,8 @@ class Booster:
         folder = Path(folder)
         m = json.loads((folder / "meta.json").read_text())
         b = cls(m["backend"], m["numeric"], m["categorical"], m["params"], m["seed"],
-                m["max_rounds"], m["patience"], m["monotone"])
+                m["max_rounds"], m["patience"], m["monotone"],
+                monotone_up=m.get("monotone_up", MONOTONE_UP))
         b.levels, b.best_iteration, b.es_logloss = m["levels"], m["best_iteration"], m["es_logloss"]
         b.monotone_note = m.get("monotone_note", "")
         if b.backend == "catboost":
