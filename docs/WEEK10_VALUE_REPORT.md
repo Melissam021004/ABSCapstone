@@ -1,6 +1,6 @@
 # Week 10 — What the 2026 challenges were worth
 
-Generated 2026-11-04 09:07 by `scripts/20_week10_challenge_value.py` · p(s) 2026.10.29-b81183b4 · V(s) 2026.11.04-824ec8be · cohort `419af01ad9eee03f` · 1000 game-level bootstrap resamples · 999 permutations per skill test
+Generated 2026-11-04 09:19 by `scripts/20_week10_challenge_value.py` · p(s) 2026.10.29-b81183b4 · V(s) 2026.11.04-824ec8be · cohort `419af01ad9eee03f` · 1000 game-level bootstrap resamples · 999 permutations per skill test
 
 > Read this next to `WEEK10.md` (Part B), which explains every section.
 
