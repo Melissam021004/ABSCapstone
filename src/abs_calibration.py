@@ -60,7 +60,12 @@ def _platt_fit(p, y, ridge=PLATT_RIDGE):
         w = mu * (1 - mu)
         H = X.T @ (X * w[:, None]) + np.diag(pen)
         g = X.T @ (y - mu) - pen * (beta - np.array([0.0, 1.0]))   # shrink b toward 1
-        step = np.linalg.solve(H, g)
+        try:
+            step = np.linalg.solve(H, g)
+        except np.linalg.LinAlgError:
+            # perfectly separated (only possible on a tiny sample): the curvature
+            # vanishes, so steady the step with a little shrinkage on both terms
+            step = np.linalg.solve(H + np.eye(2) * 1e-6 * max(len(y), 1), g)
         beta = beta + step
         if np.max(np.abs(step)) < 1e-10:
             break

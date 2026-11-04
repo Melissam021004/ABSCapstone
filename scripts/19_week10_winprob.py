@@ -56,8 +56,8 @@ from src.abs_boosting import available                                 # noqa: E
 from src.abs_calibration import METHODS, Calibrator, cross_fit         # noqa: E402
 from src.abs_features import read_any                                  # noqa: E402
 from src.abs_gamestate import (BASE_NAMES, COUNT_NAMES, FIT_INNINGS,  # noqa: E402
-                               available_seasons, build_states, describe_states,
-                               load_pitches, pa_starts)
+                               available_seasons, build_states, describe_sources,
+                               describe_states, load_pitches, pa_starts)
 from src.abs_pipeline import grouped_folds                             # noqa: E402
 from src.abs_winprob import (DMAX, N_INN, SANITY, WELL_POPULATED,     # noqa: E402
                              CallTransitions, MarkovWP, RunModel, agreement, empirical_table,
@@ -65,6 +65,7 @@ from src.abs_winprob import (DMAX, N_INN, SANITY, WELL_POPULATED,     # noqa: E4
                              write_bundle)
 
 DATA_DIR = Path(os.environ.get("ABS_DATA_DIR", "data"))
+MIN_GAMES = 300          # below this, V(s) can't be learned (a season is ~2,430 games)
 DOCS = Path(os.environ.get("ABS_DOCS_DIR", "docs"))
 MODEL_DIR = Path(os.environ.get("ABS_MODEL_DIR", "models"))
 FIGS = Path(os.environ.get("ABS_FIG_DIR", "figures")) / "week10"
@@ -156,6 +157,8 @@ def main():
     ap.add_argument("--gbm-max-rows", type=int, default=300000,
                     help="pitches sampled per boosted fit (rows within a game are near-copies)")
     ap.add_argument("--no-figures", action="store_true")
+    ap.add_argument("--allow-small", action="store_true",
+                    help=f"run even with fewer than {MIN_GAMES} usable games (testing only)")
     args = ap.parse_args()
     warnings.filterwarnings("ignore")
     t0 = time.time()
@@ -168,8 +171,19 @@ def main():
     raw, missing = load_pitches(DATA_DIR, seasons)
     if missing:
         print(f"  no files for season(s) {missing} — using {sorted(set(seasons) - set(missing))}")
+    for line in describe_sources(raw.attrs.get("sources", [])):
+        print(f"  {line}")
     p, games = build_states(raw)
     info = describe_states(p, games)
+    if info["n_usable"] < MIN_GAMES and not args.allow_small:
+        found = "\n".join("    " + l for l in describe_sources(raw.attrs.get("sources", [])))
+        raise SystemExit(
+            f"\n  Only {info['n_usable']:,} usable games were found — a season has about 2,430, "
+            f"and V(s) needs at least {MIN_GAMES:,}.\n{found}\n"
+            "  Check data/raw/statcast/: it should hold one file per month of the season\n"
+            "  (statcast_2026_2026-03.parquet ... statcast_2026_2026-09.parquet). If the full\n"
+            "  pull never finished, re-run  python scripts/01_statcast_pitches_2026.py  (it\n"
+            "  resumes where it stopped), then run Week 10 again.")
     print(f"  seasons {info['seasons']} · {info['n_pitches']:,} pitches · {info['n_pa']:,} plate "
           f"appearances · {info['n_games']:,} games"
           + (f" ({info['rows_dropped']:,} rows with no count or score dropped)"

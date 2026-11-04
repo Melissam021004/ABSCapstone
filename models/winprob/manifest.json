@@ -1,0 +1,167 @@
+{
+  "name": "V(s) home win probability",
+  "date": "2026.11.04",
+  "created": "2026-11-04T09:07:48",
+  "seasons": [
+    2026
+  ],
+  "n_games": 2428,
+  "n_pa": 184288,
+  "n_pitches_fit": 646346,
+  "fit_innings": "1\u20138",
+  "calibration": {
+    "method": "none",
+    "params": {}
+  },
+  "out_of_fold": {
+    "markov": {
+      "brier": 0.15845145904819907,
+      "log_loss": 0.47141761239602864,
+      "cal_intercept": -0.032417835705513647,
+      "cal_slope": 1.0540878041346526
+    },
+    "gbm": {
+      "brier": 0.15901759705586793,
+      "log_loss": 0.4738040658009302,
+      "cal_intercept": -0.0011358874937582007,
+      "cal_slope": 0.9793076199728197
+    },
+    "base": {
+      "brier": 0.24974604680474904,
+      "log_loss": 0.6926391881448511,
+      "cal_intercept": null,
+      "cal_slope": null
+    },
+    "mlb_statcast": {
+      "brier": 0.15855108906414528,
+      "log_loss": 0.4717653141420657,
+      "cal_intercept": 0.0574395979369343,
+      "cal_slope": 1.0710208069655272
+    }
+  },
+  "sanity": [
+    {
+      "state": "Start of the game (top 1st, 0 out, bases empty, tied)",
+      "value": 0.5295997608270029,
+      "lo": 0.51,
+      "hi": 0.57,
+      "ok": true,
+      "gbm": 0.5165957190050702,
+      "gbm_ok": true
+    },
+    {
+      "state": "Bottom 9th, tied, runner on 3rd, 1 out \u2014 the plan's check",
+      "value": 0.8360300513236113,
+      "lo": 0.78,
+      "hi": 0.89,
+      "ok": true,
+      "gbm": 0.7202310957556943,
+      "gbm_ok": false
+    },
+    {
+      "state": "Bottom 9th, tied, bases empty, 0 out",
+      "value": 0.6465907417939193,
+      "lo": 0.6,
+      "hi": 0.71,
+      "ok": true,
+      "gbm": 0.5965025628961611,
+      "gbm_ok": false
+    },
+    {
+      "state": "Bottom 9th, tied, bases loaded, 0 out",
+      "value": 0.9439279959761133,
+      "lo": 0.89,
+      "hi": 0.97,
+      "ok": true,
+      "gbm": 0.8867358824971704,
+      "gbm_ok": false
+    },
+    {
+      "state": "Top 9th, home up 1, 0 out, bases empty",
+      "value": 0.8445786595685977,
+      "lo": 0.79,
+      "hi": 0.9,
+      "ok": true,
+      "gbm": 0.8394164371332017,
+      "gbm_ok": true
+    },
+    {
+      "state": "Top 9th, home up 3, 0 out, bases empty",
+      "value": 0.9690519067687305,
+      "lo": 0.93,
+      "hi": 0.99,
+      "ok": true,
+      "gbm": 0.9763497270765026,
+      "gbm_ok": true
+    },
+    {
+      "state": "Bottom 9th, home down 1, 2 out, bases empty",
+      "value": 0.04683202625603203,
+      "lo": 0.02,
+      "hi": 0.1,
+      "ok": true,
+      "gbm": 0.11384688704816967,
+      "gbm_ok": false
+    },
+    {
+      "state": "Bottom 9th, home down 1, 2 out, runner on 2nd",
+      "value": 0.14953020743739487,
+      "lo": 0.08,
+      "hi": 0.21,
+      "ok": true,
+      "gbm": 0.1544437528121403,
+      "gbm_ok": true
+    },
+    {
+      "state": "Top 10th, tied, automatic runner on 2nd, 0 out",
+      "value": 0.5089783184738259,
+      "lo": 0.42,
+      "hi": 0.6,
+      "ok": true,
+      "gbm": 0.48626665826224624,
+      "gbm_ok": true
+    },
+    {
+      "state": "Top 5th, tied, 0 out, bases empty",
+      "value": 0.5223973994440593,
+      "lo": 0.5,
+      "hi": 0.57,
+      "ok": true,
+      "gbm": 0.48956309956054483,
+      "gbm_ok": false
+    },
+    {
+      "state": "Bottom 8th, home up 2, 0 out, bases empty",
+      "value": 0.9436144266705903,
+      "lo": 0.86,
+      "hi": 0.96,
+      "ok": true,
+      "gbm": 0.9355963608323715,
+      "gbm_ok": true
+    }
+  ],
+  "demo": false,
+  "data_dir": "data",
+  "files": {
+    "calibrator.json": "52e74322b77ccf8ce1fe66f6a077af37fc61408918f8dd8c480ced6a2f6ef6c5",
+    "call_transitions.npz": "5575c516d288508d8b2b49b8605be379481e0442447672565253b378ef9819b7",
+    "end_value.npy": "6fbbbe0414d97081b3f3c2ff39912eb2c9628db976cd80a889b880bc8fc720d0",
+    "run_model.npz": "f486147d83925d4981522b404019de747300b57e64163d5893656373540b6562",
+    "v_table.npy": "73ba73c102a4e40b69db0fccb8fe5125df1e2389db94c0cd838be1ec167abb2e"
+  },
+  "content_hash": "824ec8be4a6b55d0a4ecdf6db77ca5230aecae3347ff20d87641aa19361768df",
+  "dims": {
+    "innings": 10,
+    "halves": 2,
+    "outs": 3,
+    "bases": 8,
+    "counts": 12,
+    "score_diff": [
+      -30,
+      30
+    ]
+  },
+  "x_extra": 0.5089783184738259,
+  "pregame_home_wp_raw": 0.5295997608270029,
+  "version": "2026.11.04-824ec8be"
+}

@@ -3,26 +3,32 @@
 03_savant_abs_leaderboards.py — Baseball Savant ABS challenge leaderboards.
 
 These are AGGREGATES (player-season / team-season), not pitch-level data.
-<<<<<<< HEAD
 Two things they're good for:
 
   1. VALIDATION. Your pitch-level challenge counts from script 02 should add up
-     to Savant's totals. If they don't, your extraction is wrong. Do this check
-     in Week 5 — it is the cheapest QA you will ever run.
+     to Savant's totals. If they don't, your extraction is wrong.
   2. BENCHMARKING. Savant publishes "expected challenges" and "overturns vs
-     expected", which is the descriptive baseline your proposal says you are
-     improving on. You need their numbers to argue you beat them.
+     expected" — the descriptive baseline your novelty claim is measured against.
 
-Do NOT feed Savant's expected-challenge metrics into your model as features —
-they are built from the outcome you are predicting. That is the leak your
-Week 8 notes warn about.
+Do NOT feed Savant's expected-challenge metrics into your model as features.
+They are built from the outcome you are predicting.
 
-    python 03_savant_abs_leaderboards.py
-    python 03_savant_abs_leaderboards.py --year 2026 --level aaa
+-------------------------------------------------------------------------------
+WHY THIS SCRIPT WAS REWRITTEN
 
-Output: data/raw/savant/abs_leaderboard_<type>_<mode>_<level>_<year>.csv
-        data/raw/savant/abs_leaderboard_summary.txt
-=======
+The obvious approach — appending `&csv=true`, which works on most other Savant
+leaderboards — returns **HTTP 500** on the ABS leaderboard. It is not rate
+limiting and it is not your network; the parameter is simply not supported here.
+
+So this version fetches the normal HTML page and pulls the rows out of the JSON
+that Savant embeds in a <script> tag to render the table. That JSON is the same
+data the table shows.
+
+Strategies are tried in order and each one reports exactly what happened:
+    1. HTML page -> embedded JSON            (primary)
+    2. csv=true                              (in case MLB fixes it)
+    3. candidate JSON API endpoints          (long shot)
+-------------------------------------------------------------------------------
 
     python 03_savant_abs_leaderboards.py
     python 03_savant_abs_leaderboards.py --debug        # dump what came back
@@ -31,18 +37,13 @@ Output: data/raw/savant/abs_leaderboard_<type>_<mode>_<level>_<year>.csv
 Output: data/raw/savant/abs_leaderboard_<type>_<mode>_<level>_<year>.csv
         data/raw/savant/abs_leaderboard_summary.txt
         data/raw/savant/_debug/    (with --debug)
->>>>>>> 35bc728 (Add recent updates)
 """
 
 import argparse
 import io
-<<<<<<< HEAD
-import os
-=======
 import json
 import os
 import re
->>>>>>> 35bc728 (Add recent updates)
 import time
 from pathlib import Path
 
@@ -51,54 +52,33 @@ import requests
 
 DATA_DIR = Path(os.environ.get("ABS_DATA_DIR", "data"))
 OUT_DIR = DATA_DIR / "raw" / "savant"
-<<<<<<< HEAD
-=======
 DEBUG_DIR = OUT_DIR / "_debug"
->>>>>>> 35bc728 (Add recent updates)
 
 URL = "https://baseballsavant.mlb.com/leaderboard/abs-challenges"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
 
-<<<<<<< HEAD
-# The views the ABS leaderboard exposes.
-CHALLENGE_TYPES = ["batter", "catcher", "pitcher", "team-summary", "catching-team"]
-# 'for'    = challenges this player/team made
-# 'against'= challenges made against them
-DATA_MODES = ["for", "against"]
-
-=======
 CHALLENGE_TYPES = ["batter", "catcher", "pitcher", "team-summary", "catching-team"]
 DATA_MODES = ["for", "against"]
 
 # Transient -> worth retrying. 500 is NOT here: on this endpoint it means the
-# parameter combination is rejected
+# parameter combination is rejected, and retrying just wastes 15 seconds.
 RETRY_STATUS = {429, 502, 503, 504}
 
->>>>>>> 35bc728 (Add recent updates)
 
 def make_session():
     s = requests.Session()
     s.headers.update({
         "User-Agent": UA,
-<<<<<<< HEAD
-        "Accept": "text/csv,application/csv,text/html;q=0.9,*/*;q=0.8",
-=======
         "Accept": "text/html,application/xhtml+xml,text/csv,application/json;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
->>>>>>> 35bc728 (Add recent updates)
         "Referer": URL,
     })
     return s
 
 
-<<<<<<< HEAD
-def fetch(session, year, challenge_type, mode, level, game_type, retries=3):
-    params = {
-=======
 def base_params(year, challenge_type, mode, level, game_type):
     return {
->>>>>>> 35bc728 (Add recent updates)
         "gameType": game_type,
         "year": year,
         "challengeType": challenge_type,
@@ -107,34 +87,11 @@ def base_params(year, challenge_type, mode, level, game_type):
         "minOppChal": 0,
         "dataMode": mode,
         "page": 0,
-<<<<<<< HEAD
-        "pageSize": 2000,      # ask for everything in one page
-        "csv": "true",
-    }
-    for attempt in range(retries):
-        try:
-            r = session.get(URL, params=params, timeout=90)
-            if r.status_code != 200:
-                if r.status_code in (429, 500, 502, 503, 504):
-                    time.sleep(5 * (2 ** attempt))
-                    continue
-                return None, f"HTTP {r.status_code}"
-            text = r.content.decode("utf-8", "replace")
-            if text.lstrip().lower().startswith("<!doctype") or "<html" in text[:200].lower():
-                return None, "got HTML, not CSV (csv=true may not be supported here)"
-            df = pd.read_csv(io.StringIO(text), low_memory=False)
-            return (df, "ok") if not df.empty else (None, "empty")
-        except Exception as e:
-            if attempt == retries - 1:
-                return None, f"{type(e).__name__}: {e}"
-            time.sleep(5 * (2 ** attempt))
-    return None, "exhausted retries"
-=======
         "pageSize": 1000,
     }
 
 
-# JSON
+# ---------------------------------------------------------------- JSON digging
 def _match_bracket(s, start):
     """Index of the bracket closing the one at `start`, string-literal aware."""
     open_ch = s[start]
@@ -237,7 +194,7 @@ def _rows_from(parsed):
     return None
 
 
-# Strategies
+# ---------------------------------------------------------------- strategies
 def get(session, params, retries=3, timeout=90):
     """Returns (response, error_string). Reports the ACTUAL status code."""
     last = None
@@ -316,39 +273,23 @@ def fetch(session, year, ct, mode, level, game_type, debug=False):
         if df is not None and not df.empty:
             return df, attempts
     return None, attempts
->>>>>>> 35bc728 (Add recent updates)
 
 
+# ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--year", type=int, default=2026)
     ap.add_argument("--level", default="mlb", choices=["mlb", "aaa"])
     ap.add_argument("--game-type", default="regular",
                     choices=["regular", "spring", "postseason"])
-<<<<<<< HEAD
-    ap.add_argument("--sleep", type=float, default=2.0)
-=======
     ap.add_argument("--only", help="fetch a single challengeType (for testing)")
     ap.add_argument("--sleep", type=float, default=2.0)
     ap.add_argument("--debug", action="store_true",
                     help="save the raw HTML of each request to _debug/")
->>>>>>> 35bc728 (Add recent updates)
     args = ap.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     session = make_session()
-<<<<<<< HEAD
-    lines, got = [], 0
-
-    print(f"Savant ABS leaderboards — {args.year} {args.level} {args.game_type}\n")
-    for ct in CHALLENGE_TYPES:
-        for mode in DATA_MODES:
-            print(f"  {ct:<15} {mode:<8}", end="  ", flush=True)
-            df, status = fetch(session, args.year, ct, mode, args.level, args.game_type)
-            if df is None:
-                print(f"skip ({status})")
-                lines.append(f"{ct}/{mode}: FAILED — {status}")
-=======
     types = [args.only] if args.only else CHALLENGE_TYPES
 
     lines, got, total = [], 0, 0
@@ -367,44 +308,19 @@ def main():
                     print(f"      {a}")
                 lines.append(f"{ct}/{mode}: FAILED")
                 lines += [f"    {a}" for a in attempts]
->>>>>>> 35bc728 (Add recent updates)
                 time.sleep(args.sleep)
                 continue
 
             name = f"abs_leaderboard_{ct}_{mode}_{args.level}_{args.year}.csv"
             df.to_csv(OUT_DIR / name, index=False)
             got += 1
-<<<<<<< HEAD
-            print(f"{len(df):>5} rows, {len(df.columns)} cols -> {name}")
-            lines.append(f"{ct}/{mode}: {len(df)} rows, {len(df.columns)} cols")
-=======
             print(f"{len(df):>5} rows, {len(df.columns):>3} cols   [{attempts[-1]}]")
             lines.append(f"{ct}/{mode}: {len(df)} rows, {len(df.columns)} cols "
                          f"({attempts[-1]})")
->>>>>>> 35bc728 (Add recent updates)
             lines.append(f"    columns: {', '.join(df.columns.astype(str))}")
             time.sleep(args.sleep)
 
     (OUT_DIR / "abs_leaderboard_summary.txt").write_text("\n".join(lines))
-<<<<<<< HEAD
-
-    print(f"\n{got}/{len(CHALLENGE_TYPES)*len(DATA_MODES)} leaderboards saved to {OUT_DIR}")
-
-    if got == 0:
-        print("""
-Nothing downloaded. The ABS leaderboard may not honour csv=true.
-Fallbacks, in order of effort:
-  1. Open the leaderboard in a browser and use its own "Download CSV" button,
-     then drop the file into data/raw/savant/ by hand. Note the date you did it
-     in your manifest — a hand-pulled file still needs provenance.
-  2. Watch the Network tab while the page loads; the table is populated from a
-     JSON call. Copy that URL into this script.
-  3. Skip it. These are validation aggregates, not model inputs. Your pitch-level
-     pipeline (scripts 01, 02) does not depend on them.""")
-        return
-
-    # Quick validation hook for Week 5.
-=======
     print(f"\n{got}/{total} leaderboards saved to {OUT_DIR}")
 
     if got == 0:
@@ -427,17 +343,12 @@ manifest if you go that route; a hand-pulled file still needs provenance.""")
         return
 
     # Validation hook for Week 5.
->>>>>>> 35bc728 (Add recent updates)
     tm = OUT_DIR / f"abs_leaderboard_team-summary_for_{args.level}_{args.year}.csv"
     if tm.exists():
         df = pd.read_csv(tm)
         col = next((c for c in df.columns
                     if "chal" in c.lower() and df[c].dtype.kind in "if"
-<<<<<<< HEAD
-                    and "pct" not in c.lower() and "rate" not in c.lower()), None)
-=======
                     and not any(w in c.lower() for w in ("pct", "rate", "exp"))), None)
->>>>>>> 35bc728 (Add recent updates)
         if col:
             print(f"\nValidation target: Savant total '{col}' = {df[col].sum():,.0f}")
             print("Compare against len(abs_challenges_2026.parquet) from script 02.")

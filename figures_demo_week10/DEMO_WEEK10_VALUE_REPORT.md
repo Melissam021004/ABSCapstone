@@ -1,6 +1,6 @@
 # Week 10 — What the 2026 challenges were worth
 
-Generated 2026-10-30 21:44 by `scripts/20_week10_challenge_value.py` · p(s) 2026.10.30-f4c02dc0 · V(s) 2026.10.30-d4a59c02 · cohort `140cf6b8b98e1757` · 1000 game-level bootstrap resamples · 999 permutations per skill test
+Generated 2026-11-04 14:01 by `scripts/20_week10_challenge_value.py` · p(s) 2026.10.30-f4c02dc0 · V(s) 2026.10.30-d4a59c02 · cohort `140cf6b8b98e1757` · 1000 game-level bootstrap resamples · 999 permutations per skill test
 
 > **DEMO DATA** — a simulated season with planted differences between umpires and between challengers. The method is real; the numbers are not.
 
@@ -15,6 +15,7 @@ Umpires' wrong calls moved **303.3 wins** across the league (21,670 expected wro
 - recorded call matches who challenged on 100.0% of 3,063 upheld and 100.0% of 4,233 overturned challenges
 - verdict: ORIGINAL umpire call recorded — no repair needed
 - 372,817 called pitches valued with p(s) and V(s) (1 with a location outside p(s)'s range skipped); 356,013 challenge opportunities (a call against a side with a challenge left, worked out from the umpire's ORIGINAL call); 7,296 challenges.
+- **Where p(s) is used.** p(s) learned from challenged pitches, which sit between -9.5 and +11.6 inches against the call (99% of them). Beyond that range its curve is held flat, so a call that is clearly right — a strike in the middle of the zone — would still get the small chance of being wrong it had at the edge of the range. There the ABS call isn't in doubt, so it is taken from the zone geometry instead: 71,604 called pitches further on the right side count as calls that stand, 203 further on the wrong side as calls ABS would reverse. Inside the range, the locked p(s) is used unchanged.
 
 ## 1. What a call is worth
 
@@ -135,6 +136,8 @@ By the umpire's accuracy (thirds of umpires, adjusted for how hard their pitches
 - **left on the table**: expected wins in wrong calls against the team that it could have challenged (it had one left) and didn't.
 - **lost when out**: expected wins in wrong calls against it after it had run out.
 - **umpire net**: wrong calls that stood in its favour minus those that stood against it.
+
+Sensitivity: with p(s) as it stands on every pitch — its curve held flat beyond the range of challenged pitches — the league totals would be 21,670 expected wrong calls (vs 21,670), 303.3 wins moved (vs 303.3) and 22.2% won back (vs 22.2%). The gap is the flat tail summed over hundreds of thousands of easy calls; the challenged pitches themselves are unaffected.
 
 ## 6. Series level
 

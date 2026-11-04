@@ -24,6 +24,14 @@ Each check plants an answer worked out by hand and asks the code to find it:
      models differ by exactly zero
   7. The skill tests find a planted difference between clusters and stay quiet
      when there is none; series are grouped and "deciding games" found correctly
+  8. pybaseball's column types (Int64 / boolean / string, missing = <NA>) give
+     exactly the same game states as plain numpy columns
+  9. Finding the season: a raw Statcast folder holding only part of the season
+     falls back to the Week 5 pitch table; Platt scaling survives a fold where
+     every game went the same way
+ 10. Real-data gaps: rows with no umpire on record are left out of the skill
+     tests (not a crash); p(s) is used only over the distances challenged
+     pitches covered, and the ABS call is taken as certain beyond them
 
     python tests/test_winprob.py        (a few seconds)
 """
@@ -39,8 +47,9 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src import abs_metrics as M                                       # noqa: E402
 from src.abs_calibration import Calibrator                             # noqa: E402
-from src.abs_gamestate import N_BASES, N_COUNTS, N_OUTS                # noqa: E402
-from src.abs_value import cluster_signal, series_effects, series_table, split_half  # noqa: E402
+from src.abs_gamestate import N_BASES, N_COUNTS, N_OUTS, build_states, load_pitches  # noqa: E402
+from src.abs_value import (apply_support, cluster_signal, p_support,  # noqa: E402
+                            series_effects, series_table, split_half)
 from src.abs_winprob import (DMAX, N_END, RMAX, CallTransitions, MarkovWP,   # noqa: E402
                              RunModel, WPStateError, game_bootstrap, load_winprob,
                              parse_states, write_bundle)
@@ -233,6 +242,90 @@ check("a team that wins a series 2–1: its two wins decided it, its loss didn't
 check("net challenge value = own overturns minus the opponent's",
       abs(a_games.sort_values("game_pk")["net_gain"].iloc[0] - 0.05) < 1e-12 and
       abs(a_games.sort_values("game_pk")["net_gain"].iloc[1] + 0.02) < 1e-12)
+
+print("\nReading pybaseball's column types (Int64 / boolean / string with <NA>)")
+rows = []
+for gpk, date in ((900001, "2026-05-01"), (900002, "2026-05-02")):
+    ab = 0
+    for inn in range(1, 10):
+        for top in ("Top", "Bot"):
+            for outs in range(3):
+                ab += 1
+                on1 = 660000 + ab if outs == 1 else np.nan        # a runner, sometimes
+                seq = [("ball", None), ("called_strike", None),
+                       ("hit_into_play", "single" if outs == 1 else "field_out")]
+                for k, (desc, ev) in enumerate(seq):
+                    rows.append({"season": 2026, "game_pk": gpk, "game_date": date,
+                                 "at_bat_number": ab, "pitch_number": k + 1, "inning": inn,
+                                 "inning_topbot": top, "outs_when_up": outs,
+                                 "balls": min(k, 1), "strikes": 1 if k == 2 else 0,
+                                 "on_1b": on1, "on_2b": np.nan, "on_3b": np.nan,
+                                 "home_score": 1 if (gpk == 900001 and inn > 4) else 0,
+                                 "away_score": 0, "post_home_score": np.nan,
+                                 "post_away_score": np.nan, "events": ev, "description": desc,
+                                 "home_team": "AAA", "away_team": "BBB"})
+raw = pd.DataFrame(rows)
+plain, plain_games = build_states(raw)
+cols = ["outs", "bases", "count", "diff", "bat_runs", "runs_rest_inning", "runs_rest_pa",
+        "pa_end_outs", "pa_end_bases", "next_outs", "next_bases", "next_count", "runs_next",
+        "call_effective", "pa_start", "home_win"]
+for label, conv in (("pybaseball's", raw.convert_dtypes(convert_string=False)),
+                    ("fully nullable", raw.convert_dtypes())):
+    try:
+        got, got_games = build_states(conv)
+        same = all(np.allclose(plain[c].astype(float), got[c].astype(float), equal_nan=True)
+                   for c in cols) and len(got) == len(plain)
+        check(f"{label} column types give the same game states", same)
+    except Exception as e:                     # e.g. "boolean value of NA is ambiguous"
+        check(f"{label} column types give the same game states", False, f"{type(e).__name__}: {e}")
+
+print("\nFinding the season")
+tmp = Path(tempfile.mkdtemp())
+try:
+    (tmp / "raw" / "statcast").mkdir(parents=True)
+    (tmp / "processed").mkdir()
+    raw[raw["game_pk"] == 900001].to_csv(tmp / "raw" / "statcast" / "statcast_2026_2026-05.csv",
+                                          index=False)                 # a partial pull: 1 game
+    raw.to_csv(tmp / "processed" / "challenge_inventory_2026.csv", index=False)   # both games
+    got, _ = load_pitches(tmp, (2026,))
+    src = got.attrs["sources"][0]
+    check("a partial raw folder falls back to the Week 5 pitch table",
+          got["game_pk"].nunique() == 2 and src["path"].endswith("challenge_inventory_2026.csv"),
+          f"{got['game_pk'].nunique()} games from {Path(src['path']).name}")
+    raw.to_csv(tmp / "raw" / "statcast" / "statcast_2026_2026-05.csv", index=False)  # full pull
+    got, _ = load_pitches(tmp, (2026,))
+    check("a complete raw folder is used as it is",
+          got["game_pk"].nunique() == 2 and got.attrs["sources"][0]["path"].endswith("statcast"))
+finally:
+    shutil.rmtree(tmp, ignore_errors=True)
+try:
+    c = Calibrator("platt").fit(np.array([0.5, 0.6, 0.7]), np.array([1, 1, 1]))
+    check("Platt scaling survives a fold where every game went the same way",
+          np.isfinite(c.params["a"]) and np.isfinite(c.params["b"]))
+except Exception as e:                         # was: LinAlgError: Singular matrix
+    check("Platt scaling survives a fold where every game went the same way", False,
+          f"{type(e).__name__}: {e}")
+
+print("\nReal-data gaps")
+vals = RNG.normal(size=600)
+labs = np.repeat(np.arange(30), 20).astype(float)
+units = np.repeat(np.arange(120), 5)
+gap = labs.copy()
+gap[:40] = np.nan                                    # two umpires' games with no umpire on record
+try:
+    full = cluster_signal(vals[40:], labs[40:], units=units[40:], n_perm=99, seed=1, min_n=5)
+    holes = cluster_signal(vals, gap, units=units, n_perm=99, seed=1, min_n=5)
+    check("missing umpire ids are left out, not a crash",
+          np.isclose(full[0], holes[0]) and np.isclose(full[1], holes[1]),
+          f"stat {holes[0]:.3f} vs {full[0]:.3f}")
+except Exception as e:                       # was: 'list' argument must have no negative elements
+    check("missing umpire ids are left out, not a crash", False, f"{type(e).__name__}: {e}")
+d = np.array([-20.0, -3.0, -1.0, 0.0, 1.0, 3.0, 25.0, np.nan])
+lo, hi = p_support(np.r_[np.linspace(-4, 6, 200), d[:7]], np.ones(207, bool))
+p_adj = apply_support(np.full(8, 0.07), d, lo, hi)
+check("p(s) is kept inside the challenged range and certain beyond it",
+      p_adj[0] == 0.0 and p_adj[6] == 1.0 and np.allclose(p_adj[1:6], 0.07)
+      and p_adj[7] == 0.07, f"range {lo:+.1f} to {hi:+.1f} in.")
 
 print()
 if failures:

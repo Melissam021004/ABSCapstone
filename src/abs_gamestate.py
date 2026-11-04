@@ -70,6 +70,38 @@ OPTIONAL = ["home_team", "away_team", "game_type", "type", "bat_score", "fld_sco
             "delta_home_win_exp"]
 
 
+KEY = ["game_pk", "at_bat_number", "pitch_number"]
+
+
+def plain_dtypes(df):
+    """
+    Plain numpy columns, with NaN for "missing".
+
+    pybaseball (and pandas' own convert_dtypes) hands back "nullable" columns —
+    Int64, Float64, boolean, string — whose missing value is pd.NA. pd.NA can't
+    be True or False, so an ordinary comparison against it gives <NA> instead of a
+    boolean and numpy refuses it ("boolean value of NA is ambiguous"). Converting
+    once, on the way in, lets everything downstream use ordinary numbers:
+    numbers -> float64, True/False -> 1.0/0.0, text -> object; missing -> NaN.
+    """
+    out = df.copy()
+    for c in out.columns:
+        dt = out[c].dtype
+        if not isinstance(dt, pd.api.extensions.ExtensionDtype):
+            continue                                   # already plain numpy
+        if isinstance(dt, (pd.DatetimeTZDtype, pd.CategoricalDtype, pd.PeriodDtype)):
+            continue
+        kind = getattr(dt, "kind", "O")
+        if kind in "biufc":                            # Int64, Float64, boolean, uint8 ...
+            out[c] = out[c].astype("float64")
+        elif kind == "M":                              # pyarrow timestamps
+            out[c] = pd.to_datetime(out[c].astype(object))
+        else:                                          # string / pyarrow string ...
+            v = out[c].astype(object)
+            out[c] = v.where(v.notna(), np.nan)
+    return out
+
+
 def count_index(balls, strikes):
     return 3 * np.asarray(balls, int) + np.asarray(strikes, int)
 
@@ -111,30 +143,93 @@ def available_seasons(data_dir):
     return sorted(seasons)
 
 
+INVENTORY = Path("processed") / "challenge_inventory_2026.parquet"
+
+
+def _read_raw(files, season):
+    frames = []
+    for f in files:
+        got = read_any(f)
+        if got is None:
+            got = pd.read_csv(f) if f.suffix == ".csv" else None
+        if got is not None and len(got):
+            got = got[[c for c in REQUIRED + OPTIONAL if c in got.columns]].copy()
+            got["season"] = int(season)
+            frames.append(got)
+    return pd.concat(frames, ignore_index=True) if frames else None
+
+
+def _read_inventory(data_dir):
+    """
+    The Week 5 pitch table (script 08): every pitch of 2026, built from the same
+    Statcast pull, with the raw columns kept. Returns (frame or None, why not).
+    """
+    path = Path(data_dir) / INVENTORY
+    got = read_any(path)
+    if got is None or not len(got):
+        return None, "not found"
+    if not path.exists():
+        path = path.with_suffix(".csv")             # read_any's fallback
+    lacking = [c for c in REQUIRED if c not in got.columns]
+    if lacking:
+        return None, f"is missing {lacking}"
+    desc = got["description"].astype(str)
+    if not desc.isin(["foul", "hit_into_play", "swinging_strike"]).any():
+        return None, "has called pitches only (built with --called-only)"
+    got = got[[c for c in REQUIRED + OPTIONAL if c in got.columns]].copy()
+    got["season"] = 2026
+    got.attrs["path"] = str(path)
+    return got, None
+
+
+def _summary(df):
+    d = pd.to_datetime(df["game_date"])
+    return {"pitches": int(len(df)), "games": int(pd.Series(df["game_pk"]).nunique()),
+            "first": str(d.min().date()), "last": str(d.max().date())}
+
+
 def load_pitches(data_dir, seasons=(2026,)):
     """
-    Every regular-season pitch for the chosen seasons, straight from the raw
-    Statcast pulls (script 01): Week 10 needs every pitch — swings, balls in play,
+    Every regular-season pitch for the chosen seasons: swings, balls in play and
     the score after each pitch — not only the called pitches in the cohort.
+
+    Source: the raw Statcast pulls (script 01, data/raw/statcast/). For 2026 the
+    Week 5 pitch table (data/processed/challenge_inventory_2026.parquet) is built
+    from the same pull and keeps every column, so if the raw folder holds fewer
+    games than that table (a partial or test pull left behind), the table is used
+    instead. df.attrs["sources"] says which was used and why.
     """
-    frames, missing_files = [], []
+    frames, missing_files, sources = [], [], []
     for season in seasons:
         files = season_files(data_dir, season)
-        if not files:
+        raw = _read_raw(files, season)
+        src = {"season": int(season), "path": str(Path(data_dir) / "raw" / "statcast"),
+               "files": [f.name for f in files], "note": ""}
+        n_raw = int(raw["game_pk"].nunique()) if raw is not None else 0
+        chosen = raw
+        if int(season) == 2026 and n_raw < 2400:       # a full season is 2,430 games
+            inv, why = _read_inventory(data_dir)
+            n_inv = int(inv["game_pk"].nunique()) if inv is not None else 0
+            if n_inv >= max(1.02 * n_raw, n_raw + 1):     # clearly more of the season
+                src = {"season": 2026, "path": inv.attrs.get("path", str(Path(data_dir) / INVENTORY)),
+                       "files": [],
+                       "note": (f"data/raw/statcast holds only {n_raw:,} games of 2026"
+                                + (f" ({len(files)} file{'s' if len(files) != 1 else ''})"
+                                   if files else "") +
+                                " — using the Week 5 pitch table, built from the full pull")}
+                chosen = inv
+            elif inv is None and why != "not found":
+                src["note"] = f"the Week 5 pitch table couldn't stand in: it {why}"
+        if chosen is None:
             missing_files.append(season)
             continue
-        for f in files:
-            got = read_any(f)
-            if got is None:
-                got = pd.read_csv(f) if f.suffix == ".csv" else None
-            if got is not None and len(got):
-                got = got[[c for c in REQUIRED + OPTIONAL if c in got.columns]].copy()
-                got["season"] = int(season)
-                frames.append(got)
+        src.update(_summary(chosen))
+        sources.append(src)
+        frames.append(chosen)
     if not frames:
         raise SystemExit(f"  No Statcast files for season(s) {list(seasons)} under "
                          f"{Path(data_dir) / 'raw' / 'statcast'}. Run script 01 first.")
-    df = pd.concat(frames, ignore_index=True)
+    df = plain_dtypes(pd.concat(frames, ignore_index=True))
     lacking = [c for c in REQUIRED if c not in df.columns]
     if lacking:
         raise SystemExit(
@@ -148,7 +243,21 @@ def load_pitches(data_dir, seasons=(2026,)):
     df = (df.drop_duplicates(["game_pk", "at_bat_number", "pitch_number"], keep="last")
             .sort_values(["game_pk", "at_bat_number", "pitch_number"])
             .reset_index(drop=True))
+    df.attrs["sources"] = sources
     return df, missing_files
+
+
+def describe_sources(sources):
+    """Printable lines: where the pitches came from."""
+    out = []
+    for s in sources:
+        where = s["path"] + (f" ({len(s['files'])} file{'s' if len(s['files']) != 1 else ''})"
+                             if s["files"] else "")
+        out.append(f"{s['season']}: {s['pitches']:,} pitches, {s['games']:,} games, "
+                   f"{s['first']} to {s['last']} — from {where}")
+        if s["note"]:
+            out.append(f"   ({s['note']})")
+    return out
 
 
 # ----------------------------------------------------------------- states
@@ -162,14 +271,17 @@ def build_states(raw):
     games: one row per game with the final score, who won, and whether the game
     is usable for win probability (9+ innings, a winner).
     """
-    df = raw.copy()
-    essential = ["inning", "outs_when_up", "balls", "strikes", "home_score", "away_score"]
+    df = plain_dtypes(raw)                 # pybaseball's nullable columns -> plain numpy
+    essential = KEY + ["inning", "outs_when_up", "balls", "strikes", "home_score",
+                       "away_score"]
     for c in essential:
         df[c] = pd.to_numeric(df[c], errors="coerce")
     bad = df[essential].isna().any(axis=1)
     n_dropped = int(bad.sum())
     if n_dropped:                       # a handful of rows with no count or score: unusable
         df = df[~bad].reset_index(drop=True)
+    for c in KEY + ["inning", "home_score", "away_score"]:
+        df[c] = df[c].astype(np.int64)
     df["half"] = df["inning_topbot"].astype(str).str.lower().str.startswith("bot").astype(int)
     df["outs"] = pd.to_numeric(df["outs_when_up"], errors="coerce").astype(int)
     df["bases"] = bases_code(df["on_1b"], df["on_2b"], df["on_3b"])
@@ -182,6 +294,7 @@ def build_states(raw):
     nxt = df.groupby("game_pk")[["home_score", "away_score"]].shift(-1)
     df["post_home_score"] = df["post_home_score"].fillna(nxt["home_score"]).fillna(df["home_score"])
     df["post_away_score"] = df["post_away_score"].fillna(nxt["away_score"]).fillna(df["away_score"])
+    df[["post_home_score", "post_away_score"]] = df[["post_home_score", "post_away_score"]].astype(np.int64)
     df["diff"] = (df["home_score"] - df["away_score"]).astype(int)
     bot = df["half"].eq(1)
     df["bat_runs"] = np.where(bot, df["home_score"], df["away_score"]).astype(int)

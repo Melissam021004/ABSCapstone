@@ -56,18 +56,59 @@ def _in_range(df):
     return ok
 
 
+SUPPORT_PCT = (0.5, 99.5)   # the range of challenged pitches p(s) is trusted over
+
+
+def p_support(dist, challenged, pct=SUPPORT_PCT):
+    """
+    The distances (inches against the call) that challenged pitches actually
+    covered: the 0.5th to 99.5th percentile — the same range Week 7's GAM put
+    its knots over, and beyond which its curve is held flat.
+    """
+    d = np.asarray(dist, float)[np.asarray(challenged, bool)]
+    d = d[np.isfinite(d)]
+    if len(d) < 50:
+        return -np.inf, np.inf
+    lo, hi = np.percentile(d, pct)
+    return float(lo), float(hi)
+
+
+def apply_support(p_model, dist, lo, hi):
+    """
+    p(s) where it was trained; beyond it the ABS call is not in doubt. A pitch
+    further on the RIGHT side of the edge than almost any challenged pitch is a
+    call that stands (0); further on the WRONG side, one ABS reverses (1).
+    Inside the range the locked p(s) is used unchanged.
+    """
+    p = np.array(p_model, float, copy=True)
+    d = np.asarray(dist, float)
+    known = np.isfinite(p) & np.isfinite(d)
+    p[known & (d < lo)] = 0.0
+    p[known & (d > hi)] = 1.0
+    return p
+
+
 def valuation_table(cohort, pm, wp):
     """
     Every called pitch in the cohort, valued. `cohort` comes from add_features()
     (so `called_strike` is the umpire's ORIGINAL call); pm is the locked p(s),
     wp the locked V(s).
+
+    `p_model` is the locked p(s) as it stands; `p_s` (used everywhere) is the
+    same thing inside the range of distances that challenged pitches covered,
+    and the ABS geometry beyond it (see apply_support). The bounds are in
+    out.attrs["p_support"].
     """
     from .abs_predict import states_from_cohort
     c = cohort.reset_index(drop=True)
     ok = _in_range(c)
-    p_s = np.full(len(c), np.nan)
+    p_model = np.full(len(c), np.nan)
     if ok.any():
-        p_s[ok.to_numpy()] = pm.predict_frame(states_from_cohort(c[ok]), strict=False)
+        p_model[ok.to_numpy()] = pm.predict_frame(states_from_cohort(c[ok]), strict=False)
+    dist = (pd.to_numeric(c["dist_against_call"], errors="coerce").to_numpy()
+            if "dist_against_call" in c.columns else np.full(len(c), np.nan))
+    lo, hi = p_support(dist, c["was_challenged"].astype(bool).to_numpy())
+    p_s = apply_support(p_model, dist, lo, hi)
     strike = c["called_strike"].astype(bool).to_numpy()
     bat_home = c["inning_topbot"].astype(str).str.lower().str.startswith("bot").to_numpy()
     st = pd.DataFrame({"inning": c["inning"], "half": np.where(bat_home, "bot", "top"),
@@ -94,7 +135,8 @@ def valuation_table(cohort, pm, wp):
         "chall_team": np.where(chall_home, c["home_team"], c["away_team"]),
         "other_team": np.where(chall_home, c["away_team"], c["home_team"]),
         "chall_home": chall_home, "rem": rem, "opportunity": (rem > 0) & ~ppp,
-        "p_s": p_s, "dwp": cv["dwp_challenger"].to_numpy(),
+        "p_s": p_s, "p_model": p_model, "dist_against_call": dist,
+        "dwp": cv["dwp_challenger"].to_numpy(),
         "druns_chall": np.where(strike, druns_bat, -druns_bat),
         "wp_stands_chall": np.where(chall_home, wps, 1 - wps),
         "wp_over_chall": np.where(chall_home, wpo, 1 - wpo),
@@ -112,6 +154,12 @@ def valuation_table(cohort, pm, wp):
     out["ev"] = out["p_s"] * out["dwp"]
     out["gain"] = np.where(out["overturned"], out["dwp"], 0.0)
     out["runs_gain"] = np.where(out["overturned"], out["druns_chall"], 0.0)
+    fin = np.isfinite(p_model) & np.isfinite(dist)
+    out.attrs["p_support"] = {"lo": lo, "hi": hi,
+                              "n_below": int((fin & (dist < lo)).sum()),
+                              "n_above": int((fin & (dist > hi)).sum()),
+                              "model_sum_below": float(np.nansum(p_model[fin & (dist < lo)])),
+                              "model_sum_above": float(np.nansum(1 - p_model[fin & (dist > hi)]))}
     return out
 
 
@@ -265,9 +313,14 @@ def league_totals(val):
     v = val[np.isfinite(val["p_s"]) & np.isfinite(val["dwp"])]
     swing = float(v["ev"].sum())
     rec = float(v["gain"].sum())
+    raw = v["p_model"] if "p_model" in v.columns else v["p_s"]
+    swing_raw = float((raw * v["dwp"]).sum())
     return {"called_pitches": int(len(v)), "expected_wrong_calls": float(v["p_s"].sum()),
             "wins_swung_by_wrong_calls": swing, "wins_recovered": rec,
             "share_recovered": rec / swing if swing > 0 else np.nan,
+            "expected_wrong_calls_model": float(raw.sum()),
+            "wins_swung_model": swing_raw,
+            "share_recovered_model": rec / swing_raw if swing_raw > 0 else np.nan,
             "overturns": int(v["overturned"].sum()), "challenges": int(v["challenged"].sum()),
             "games": int(v["game_pk"].nunique())}
 
@@ -360,15 +413,24 @@ def cluster_signal(values, labels, strata=None, n_perm=999, seed=0, min_n=5, uni
     would produce (0 when the spread is no bigger than chance).
     """
     v = np.asarray(values, float)
-    ok = np.isfinite(v)
-    lab = pd.factorize(pd.Series(labels).astype(str).to_numpy()[ok])[0]
+    labels = pd.Series(np.asarray(labels, dtype=object))
+    ok = np.isfinite(v) & labels.notna().to_numpy()     # no label (e.g. no umpire on record): out
+    if strata is not None:
+        strata = pd.Series(np.asarray(strata, dtype=object))
+        ok &= strata.notna().to_numpy()
+    if units is not None:
+        units = pd.Series(np.asarray(units, dtype=object))
+        ok &= units.notna().to_numpy()
+    if ok.sum() < 2:
+        return np.nan, np.nan, np.nan, np.nan
+    lab = pd.factorize(labels[ok].astype(str).to_numpy())[0]
     st = (np.zeros(ok.sum(), int) if strata is None
-          else pd.factorize(pd.Series(strata).astype(str).to_numpy()[ok])[0])
+          else pd.factorize(strata[ok].astype(str).to_numpy())[0])
     v = v[ok]
     if units is None:
         S_u, N_u, L_u, T_u = v, np.ones(len(v)), lab, st
     else:
-        u = pd.factorize(pd.Series(np.asarray(units)[ok]))[0]
+        u = pd.factorize(units[ok].astype(str).to_numpy())[0]
         S_u = np.bincount(u, v)
         N_u = np.bincount(u).astype(float)
         first = pd.Series(np.arange(len(u))).groupby(u).first().to_numpy()
@@ -408,8 +470,9 @@ def split_half(values, labels, order, min_n=10):
     correlate the two halves' means across clusters, and step it up to the full
     sample (Spearman–Brown). 0 = pure noise; 1 = a perfectly stable trait.
     """
-    df = pd.DataFrame({"v": np.asarray(values, float), "l": pd.Series(labels).astype(str).to_numpy(),
-                       "o": np.asarray(order)}).dropna(subset=["v"])
+    df = pd.DataFrame({"v": np.asarray(values, float), "l": np.asarray(labels, dtype=object),
+                       "o": np.asarray(order)}).dropna(subset=["v", "l"])
+    df["l"] = df["l"].astype(str)
     df = df.sort_values(["l", "o"])
     df["half"] = df.groupby("l").cumcount() % 2
     g = df.groupby(["l", "half"])["v"].agg(["mean", "size"]).unstack()
@@ -460,7 +523,7 @@ def umpire_table(val):
     return g.sort_values("excess_per_100").reset_index(drop=True), v
 
 
-__all__ = ["valuation_table", "game_mean_ci", "game_diff_ci", "natural_experiment",
+__all__ = ["valuation_table", "p_support", "apply_support", "game_mean_ci", "game_diff_ci", "natural_experiment",
            "value_ahead", "summarise_ahead", "team_season", "league_totals", "series_table",
            "series_effects", "shrink_rates", "cluster_signal", "split_half",
            "challenger_table", "difficulty_baseline", "umpire_table"]

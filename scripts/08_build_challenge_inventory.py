@@ -77,16 +77,6 @@ def zone_distance_ft(plate_x, plate_z, top, bot):
 
 
 # ---------------------------------------------------------------- loading
-<<<<<<< HEAD
-def load_statcast():
-    files = sorted((RAW / "statcast").glob("statcast_2026_*.parquet"))
-    if not files:
-        sys.exit(f"No Statcast files in {RAW/'statcast'}. Run script 01.")
-    df = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
-    df["game_date"] = pd.to_datetime(df["game_date"])
-    df = df.sort_values(["game_pk", "at_bat_number", "pitch_number"]).reset_index(drop=True)
-    note(f"Statcast: {len(df):,} pitches, {df['game_pk'].nunique():,} games")
-=======
 # Row-count ledger: Week 5 asks for row counts at each join step, and a silent
 # row-count change across a join is the classic way a merge goes wrong.
 ledger = []
@@ -140,35 +130,21 @@ def load_statcast():
     df = df.sort_values(["game_pk", "at_bat_number", "pitch_number"]).reset_index(drop=True)
     note(f"Statcast: {len(df):,} pitches, {df['game_pk'].nunique():,} games")
     step("1. Statcast pitch spine", len(df), len(df.columns))
->>>>>>> 35bc728 (Add recent updates)
     return df
 
 
 def load_challenges():
-<<<<<<< HEAD
-    f = RAW / "challenges" / "abs_challenges_2026.parquet"
-    if not f.exists():
-        sys.exit(f"No challenge file at {f}. Run script 02.")
-    df = pd.read_parquet(f)
-    note(f"Challenges: {len(df):,} events, {df['game_pk'].nunique():,} games")
-=======
     df = read_any(RAW / "challenges" / "abs_challenges_2026.parquet")
     if df is None:
         sys.exit(f"No challenge file in {RAW/'challenges'}. Run script 02 first.")
     note(f"Challenges: {len(df):,} events, {df['game_pk'].nunique():,} games")
     step("   challenge events (input)", len(df), len(df.columns))
->>>>>>> 35bc728 (Add recent updates)
     return df
 
 
 def maybe(path, label):
-<<<<<<< HEAD
-    if Path(path).exists():
-        df = pd.read_parquet(path)
-=======
     df = read_any(path)
     if df is not None:
->>>>>>> 35bc728 (Add recent updates)
         note(f"{label}: {len(df):,} rows")
         return df
     note(f"{label}: not found at {path} — skipping", ok=False)
@@ -217,15 +193,6 @@ def derive_challenge_state(pitches, challenges):
 
     matched = int(df["was_challenged"].sum())
     rate = matched / max(len(challenges), 1)
-<<<<<<< HEAD
-    note(f"Challenge->pitch join: {matched:,}/{len(challenges):,} matched ({rate:.1%})",
-         ok=rate >= 0.95)
-    if rate < 0.95:
-        note("    Unmatched challenges usually mean (a) the at_bat_number "
-             "off-by-one is wrong, (b) pitchNumber counts pickoffs/timeouts, or "
-             "(c) the game is in one source but not the other. Fix before modelling.",
-             ok=False)
-=======
 
     # Split the misses into the two very different reasons they happen. A
     # challenge with no pitch number cannot be joined by ANY method — the Stats
@@ -250,7 +217,6 @@ def derive_challenge_state(pitches, challenges):
              "at_bat_number off-by-one is wrong, (b) pitchNumber counts "
              "pickoffs/timeouts, or (c) the game is in one source but not the "
              "other. Fix before modelling.", ok=False)
->>>>>>> 35bc728 (Add recent updates)
 
     # batting side per pitch
     df["batting_side"] = np.where(df["inning_topbot"].str.lower().str.startswith("top"),
@@ -308,10 +274,7 @@ def derive_challenge_state(pitches, challenges):
 
     df["challenges_remaining_batting"] = rem_bat
     df["challenges_remaining_fielding"] = rem_fld
-<<<<<<< HEAD
-=======
     step("2. + challenge outcomes & inventory", len(df), len(df.columns))
->>>>>>> 35bc728 (Add recent updates)
 
     bad = ((df["challenges_remaining_batting"] < 0) |
            (df["challenges_remaining_batting"] > START_CHALLENGES)) & (df["inning"] <= 9)
@@ -350,10 +313,7 @@ def add_abs_zone(df, bios):
     note(f"ABS zone vs Statcast zone disagree on "
          f"{df['zone_defs_disagree'].mean():.2%} of called pitches "
          f"(this is where challenges live)")
-<<<<<<< HEAD
-=======
     step("3. + ABS zone & distance", len(df), len(df.columns))
->>>>>>> 35bc728 (Add recent updates)
     return df
 
 
@@ -390,13 +350,6 @@ def flag_opportunities(df, bios):
     # pitches, which is the whole point of the opportunity denominator.
     df["would_be_overturned"] = df["is_called_pitch"] & (df["abs_strike"] != df["called_strike"])
 
-<<<<<<< HEAD
-    # A cheap stand-in for Savant's "reasonable pitch". Their real definition
-    # also uses RE288 run value; refine this in Week 6 if you need to match them.
-    df["is_reasonable_pitch"] = (
-        df["is_challenge_opportunity"] &
-        (df["would_be_overturned"] | (df["zone_dist_in"].abs() <= 3.0)))
-=======
     # Stand-in for Savant's "reasonable pitch". Theirs is: the call would be
     # overturned, OR it was correct but within 3 inches of the edge AND the
     # situation carries run value >= +0.30 on the RE288 scale, OR challenge
@@ -413,7 +366,6 @@ def flag_opportunities(df, bios):
         df["is_challenge_opportunity"] &
         (df["would_be_overturned"] |
          ((df["zone_dist_in"].abs() <= 3.0) & high_value_count)))
->>>>>>> 35bc728 (Add recent updates)
 
     share = df["is_challenge_opportunity"].mean()
     note(f"Challenge opportunities: {df['is_challenge_opportunity'].sum():,} "
@@ -422,10 +374,7 @@ def flag_opportunities(df, bios):
     r_share = df["is_reasonable_pitch"].mean()
     note(f"'Reasonable' pitches: {df['is_reasonable_pitch'].sum():,} "
          f"({r_share:.1%}) — Savant reports ~5%", ok=0.02 <= r_share <= 0.12)
-<<<<<<< HEAD
-=======
     step("4. + opportunity flags", len(df), len(df.columns))
->>>>>>> 35bc728 (Add recent updates)
     return df
 
 
@@ -456,9 +405,6 @@ def attach_context(df, winprob, framing, umpires):
         else:
             note("Framing file has no joinable player id — skipping", ok=False)
 
-<<<<<<< HEAD
-    if umpires is not None and "hp_umpire_id" in umpires.columns:
-=======
     # The home-plate umpire is a GAME-level attribute, so it must come from the
     # game index and apply to every pitch. The challenge merge also carries an
     # hp_umpire column, but only on challenged pitches (~2% of rows) — taking
@@ -479,30 +425,16 @@ def attach_context(df, winprob, framing, umpires):
 
     if umpires is not None and "hp_umpire_id" in umpires.columns \
             and "hp_umpire_id" in df.columns:
->>>>>>> 35bc728 (Add recent updates)
         keep = ["hp_umpire_id", "accuracy", "borderline_accuracy",
                 "missed_strike_rate", "missed_ball_rate"]
         u = umpires[[c for c in keep if c in umpires.columns]].copy()
         u.columns = ["hp_umpire_id"] + [f"ump_{c}" for c in u.columns[1:]]
-<<<<<<< HEAD
-        # Use the umpire id from the game index, not the challenge join (which
-        # is only populated on challenged pitches).
-        if "hp_umpire_id" not in df.columns or df["hp_umpire_id"].isna().all():
-            gi = RAW / "challenges" / "games_2026.parquet"
-            if gi.exists():
-                g = pd.read_parquet(gi)[["game_pk", "hp_umpire", "hp_umpire_id"]]
-                df = df.drop(columns=[c for c in ("hp_umpire", "hp_umpire_id")
-                                      if c in df.columns]).merge(g, on="game_pk", how="left")
-        df = df.merge(u, on="hp_umpire_id", how="left")
-        note("Umpire accuracy attached")
-=======
         u = u.drop_duplicates(subset=["hp_umpire_id"])
         df = df.merge(u, on="hp_umpire_id", how="left")
         note(f"Umpire accuracy matched: "
              f"{df['ump_accuracy'].notna().mean():.1%} of pitches",
              ok=df["ump_accuracy"].notna().mean() > 0.95)
     step("5. + win prob, framing, umpire", len(df), len(df.columns))
->>>>>>> 35bc728 (Add recent updates)
     return df
 
 
@@ -575,21 +507,6 @@ def main():
 
     # Challenge rate on opportunities, by challenges remaining — the behavioural
     # signature the MDP is supposed to explain.
-<<<<<<< HEAD
-    opp = df[df["is_challenge_opportunity"]]
-    if len(opp):
-        tbl = opp.groupby("challenges_remaining_batting").agg(
-            opportunities=("was_challenged", "size"),
-            challenge_rate=("was_challenged", "mean")).round(5)
-        print("\n  Challenge rate by challenges remaining (batting side):")
-        print(tbl.to_string())
-        qa.append(tbl.to_string())
-
-    out = OUT_DIR / "challenge_inventory_2026.parquet"
-    df.to_parquet(out, index=False)
-    ch_out = OUT_DIR / "challenge_events_2026.parquet"
-    df[df["was_challenged"]].to_parquet(ch_out, index=False)
-=======
     # Group BATTING-side opportunities by the BATTING side's inventory. Pooling
     # all opportunities here would mix in pitches that are only the fielding
     # side's opportunity, and the rate would be meaningless.
@@ -622,21 +539,16 @@ def main():
     if not args.called_only:
         note(f"Row count preserved through every join: {spine:,} -> {final:,}",
              ok=spine == final)
->>>>>>> 35bc728 (Add recent updates)
 
     (OUT_DIR / "qa_report.txt").write_text("\n".join(qa))
 
     print(f"\n{'=' * 70}")
     print(f"Saved {len(df):,} rows x {len(df.columns)} cols -> {out}")
     print(f"Saved {n_ch:,} challenge events -> {ch_out}")
-<<<<<<< HEAD
-    print(f"QA report -> {OUT_DIR/'qa_report.txt'}")
-=======
     print(f"Join ledger -> {OUT_DIR/'join_ledger.csv'}")
     print(f"QA notes    -> {OUT_DIR/'qa_report.txt'}")
     print("\nNext: 09_data_dictionary.py, then 10_qa_assertions.py, "
           "then 11_verify_challenges_remaining.py")
->>>>>>> 35bc728 (Add recent updates)
     print("""
 BEFORE YOU MODEL: hand-verify challenges_remaining on three real games.
 Open the play-by-play on MLB.com, find each challenge, and confirm the

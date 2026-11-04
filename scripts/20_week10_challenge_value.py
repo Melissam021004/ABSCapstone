@@ -45,7 +45,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "eda"))
 
 from src.abs_features import add_features, describe_call_check, load_cohort   # noqa: E402
-from src.abs_gamestate import BASE_NAMES, COUNT_NAMES, build_states, load_pitches  # noqa: E402
+from src.abs_gamestate import (BASE_NAMES, COUNT_NAMES, build_states,  # noqa: E402
+                               describe_sources, load_pitches)
 from src.abs_pipeline import resolve_fingerprint                     # noqa: E402
 from src.abs_predict import load_production                          # noqa: E402
 from src.abs_value import (KEY, challenger_table, cluster_signal,    # noqa: E402
@@ -107,7 +108,11 @@ def main():
     print(f"  p(s) {pm.manifest.get('version')} · V(s) {wp.version} · cohort {fingerprint}"
           + (f" ({fp_note})" if fp_note else ""))
     val = valuation_table(cohort, pm, wp)
-    pitches, games = build_states(load_pitches(DATA_DIR, (2026,))[0])
+    sup = dict(val.attrs.get("p_support", {}))          # read before any merge drops attrs
+    raw_pitches = load_pitches(DATA_DIR, (2026,))[0]
+    for i, line in enumerate(describe_sources(raw_pitches.attrs.get("sources", []))):
+        print(("  every pitch, " if i == 0 else "  ") + line)
+    pitches, games = build_states(raw_pitches)
     extra = pitches[KEY + ["runs_rest_inning", "home_win"]]
     val = val.merge(extra, on=KEY, how="left")
     val["chall_won"] = np.where(val["chall_home"], val["home_win"], 1 - val["home_win"])
@@ -120,6 +125,10 @@ def main():
     print(f"  {len(val):,} called pitches valued ({int((~ok).sum()):,} outside p(s)'s range "
           f"skipped); {int((val['opportunity'] & ok).sum()):,} were challenge opportunities; "
           f"{len(ch):,} were challenged")
+    if sup and np.isfinite(sup.get("lo", np.nan)):
+        print(f"  p(s) is used where challenges happened — from {sup['lo']:+.1f} to {sup['hi']:+.1f} in. "
+              f"against the call (99% of challenged pitches); beyond that the ABS call is certain: "
+              f"{sup['n_below']:,} calls stand, {sup['n_above']:,} would be reversed")
     if demo:
         print("  DEMO DATA — every number below is from a simulated season")
 
@@ -207,6 +216,9 @@ def main():
     print(f"  wrong calls moved {lg['wins_swung_by_wrong_calls']:.1f} wins across the league "
           f"({lg['expected_wrong_calls']:,.0f} expected wrong calls); overturns won back "
           f"{lg['wins_recovered']:.1f} ({pct(lg['share_recovered'])})")
+    print(f"  (with p(s) as it stands on every pitch — its curve held flat beyond the challenged "
+          f"range — it would be {lg['expected_wrong_calls_model']:,.0f} expected wrong calls and "
+          f"{lg['wins_swung_model']:.1f} wins, {pct(lg['share_recovered_model'])} won back)")
     t3 = teams.head(3)
     for _, r in t3.iterrows():
         print(f"  {r['team']}: +{r['wins_added']:.2f} wins from {int(r['overturned'])} overturns; "
@@ -262,6 +274,10 @@ def main():
 
     # ------------------------------------------------------------ 8. umpires
     banner("8. Umpires — who misses more, and what it changes")
+    no_ump = vq["umpire_id"].isna()
+    if no_ump.any():
+        print(f"  {int(no_ump.sum()):,} called pitches in {vq.loc[no_ump, 'game_pk'].nunique():,} games "
+              "have no home-plate umpire on record — left out of the umpire tests")
     t_ump = cluster_signal(vq["excess"], vq["umpire_id"], n_perm=args.perm, seed=args.seed,
                            units=vq["game_pk"], min_n=200)
     rel_ump = split_half_games(vq)
@@ -316,7 +332,8 @@ def main():
              lg=lg, n_series=n_series, s_series=s_series, s_games=s_games, roles=roles,
              chal=chal, t_out=t_out, t_sel=t_sel, rel_sel=rel_sel, rel_out=rel_out, ump=ump,
              ump_ok=ump_ok, t_ump=t_ump, rel_ump=rel_ump, t_ump_out=t_ump_out, tiers=tiers,
-             args=args, n_skipped=int((~ok).sum()))
+             args=args, n_skipped=int((~ok).sum()), sup=sup,
+             no_ump=(int(vq["umpire_id"].isna().sum()), int(vq.loc[vq["umpire_id"].isna(), "game_pk"].nunique())))
     if not args.no_figures:
         banner("Figures")
         import week10_figures as W10
@@ -383,7 +400,18 @@ def report(k):
       f"{int((k['val']['opportunity'] & np.isfinite(k['val']['p_s'])).sum()):,} challenge "
       "opportunities (a call against a side "
       f"with a challenge left, worked out from the umpire's ORIGINAL call); {len(ch):,} "
-      "challenges.\n")
+      "challenges.")
+    sp = k.get("sup") or {}
+    if sp and np.isfinite(sp.get("lo", np.nan)):
+        w(f"- **Where p(s) is used.** p(s) learned from challenged pitches, which sit between "
+          f"{sp['lo']:+.1f} and {sp['hi']:+.1f} inches against the call (99% of them). Beyond that "
+          "range its curve is held flat, so a call that is clearly right — a strike in the "
+          "middle of the zone — would still get the small chance of being wrong it had at the "
+          "edge of the range. There the ABS call isn't in doubt, so it is taken from the zone "
+          f"geometry instead: {sp['n_below']:,} called pitches further on the right side count "
+          f"as calls that stand, {sp['n_above']:,} further on the wrong side as calls ABS would "
+          "reverse. Inside the range, the locked p(s) is used unchanged.")
+    w("")
 
     w("## 1. What a call is worth\n")
     w("Win probability the challenging side gains if the call is overturned (`dwp`), and runs "
@@ -472,6 +500,13 @@ def report(k):
       "challenged (it had one left) and didn't.")
     w("- **lost when out**: expected wins in wrong calls against it after it had run out.")
     w("- **umpire net**: wrong calls that stood in its favour minus those that stood against it.\n")
+    w(f"Sensitivity: with p(s) as it stands on every pitch — its curve held flat beyond the range "
+      f"of challenged pitches — the league totals would be {lg['expected_wrong_calls_model']:,.0f} "
+      f"expected wrong calls (vs {lg['expected_wrong_calls']:,.0f}), {lg['wins_swung_model']:.1f} "
+      f"wins moved (vs {lg['wins_swung_by_wrong_calls']:.1f}) and "
+      f"{pct(lg['share_recovered_model'])} won back (vs {pct(lg['share_recovered'])}). The gap is "
+      "the flat tail summed over hundreds of thousands of easy calls; the challenged pitches "
+      "themselves are unaffected.\n")
 
     w("## 6. Series level\n")
     ss = k["s_series"]
@@ -526,6 +561,10 @@ def report(k):
         w("")
 
     w("## 8. Umpires — who misses more, and what it changes\n")
+    nu = k.get("no_ump") or (0, 0)
+    if nu[0]:
+        w(f"- {nu[0]:,} called pitches in {nu[1]:,} games have no home-plate umpire on record; "
+          "they are left out of this section.")
     w(f"- Do umpires differ in how often ABS would reverse them, for pitches of the same "
       f"difficulty? Permutation test (whole games shuffled between umpires): **p = "
       f"{k['t_ump'][1]:.3f}**; size ±{100 * k['t_ump'][3]:.2f} wrong calls per 100 called "

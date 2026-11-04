@@ -2,7 +2,6 @@
 """
 02_abs_challenges_statsapi.py — every ABS challenge event of 2026.
 
-<<<<<<< HEAD
 The MLB Stats API is the authoritative source for WHO challenged and WHETHER
 the call was overturned. Baseball Savant publishes aggregates; the Stats API
 publishes the events. Your model target (`was_overturned`) comes from here.
@@ -13,9 +12,6 @@ Resumable: one cached JSON per game. Re-run to pick up where it stopped.
     python 02_abs_challenges_statsapi.py --start 2026-04-15 --end 2026-04-15
 
     # Week 4: the whole season
-=======
-    python 02_abs_challenges_statsapi.py --start 2026-04-15 --end 2026-04-15
->>>>>>> 35bc728 (Add recent updates)
     python 02_abs_challenges_statsapi.py
 
 Output:
@@ -23,15 +19,12 @@ Output:
     data/raw/challenges/abs_challenges_2026.parquet (tidy events)
     data/raw/challenges/games_2026.parquet          (game index + umpires)
 
-<<<<<<< HEAD
 2026 rules encoded downstream (script 08), recorded here for reference:
   - 2 challenges per team to start the game
   - a SUCCESSFUL challenge is retained; only a failed one is consumed
   - only the batter, catcher, or pitcher may challenge
   - in extra innings a team that has run out gets one more that inning
   - no challenges while a position player is pitching
-=======
->>>>>>> 35bc728 (Add recent updates)
 """
 
 import argparse
@@ -52,13 +45,8 @@ API = "https://statsapi.mlb.com/api/v1"
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " \
      "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
-<<<<<<< HEAD
 SEASON_START = "2026-03-25"
 SEASON_END = "2026-09-28"
-=======
-SEASON_START = "2026-03-24"
-SEASON_END = "2026-09-29"
->>>>>>> 35bc728 (Add recent updates)
 
 CHALLENGE_WORDS = ("challenge", "challenged", "challenges", "abs review",
                    "automated ball-strike")
@@ -300,11 +288,7 @@ def main():
     out = OUT_DIR / "abs_challenges_2026.parquet"
     df.to_parquet(out, index=False)
 
-<<<<<<< HEAD
     # ------------------------------ QA ------------------------------
-=======
-
->>>>>>> 35bc728 (Add recent updates)
     print("\n" + "=" * 62)
     print(f"{len(df):,} challenges across {df['game_pk'].nunique():,} games "
           f"({len(df)/max(df['game_pk'].nunique(),1):.2f} per game)")
@@ -330,11 +314,7 @@ def main():
             .sort_values(ascending=False).head(8)
     print(cnt.to_string())
 
-<<<<<<< HEAD
     # Data-quality flags worth knowing before Week 5.
-=======
-    # Data-quality flags
->>>>>>> 35bc728 (Add recent updates)
     print("\nData quality:")
     for col, label in [("challenger_name", "challenger identity"),
                        ("challenger_role", "challenger role"),

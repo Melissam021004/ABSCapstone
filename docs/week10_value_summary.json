@@ -1,0 +1,22 @@
+{
+ "generated": "2026-11-04T09:07:57",
+ "p_s_version": "2026.10.29-b81183b4",
+ "v_version": "2026.11.04-824ec8be",
+ "called_pitches": 370883.0,
+ "expected_wrong_calls": 23427.98684276625,
+ "wins_swung_by_wrong_calls": 272.29489779839366,
+ "wins_recovered": 57.513593148872545,
+ "share_recovered": 0.2112180346157475,
+ "expected_wrong_calls_model": 54485.17586836518,
+ "wins_swung_model": 731.5396889522531,
+ "share_recovered_model": 0.07861992181346486,
+ "overturns": 4424.0,
+ "challenges": 7897.0,
+ "games": 2441.0,
+ "best_team": "CIN",
+ "best_team_wins": 2.4994823026962516,
+ "p_who_given_pitch": 0.397,
+ "p_which_pitches": 0.002,
+ "p_umpires": 0.001,
+ "demo": false
+}

@@ -3,16 +3,10 @@
 00_env_check.py — Week 3 data-feasibility spike.
 
 Checks that every data source in the capstone proposal is reachable and returns
-<<<<<<< HEAD
 what it is supposed to return, then writes a report you can paste into the
 Week 3 deliverable.
 
 Run this FIRST. Nothing else is worth debugging until this passes.
-=======
-what it is supposed to return,
-
-Running
->>>>>>> 35bc728 (Add recent updates)
 
     python 00_env_check.py
     python 00_env_check.py --date 2026-04-15      # probe a specific game day
@@ -37,11 +31,7 @@ UA = (
     "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 )
 
-<<<<<<< HEAD
 # Every source named in the Fall proposal / Capstone outline.
-=======
-# Every source I listed in the proposal
->>>>>>> 35bc728 (Add recent updates)
 SOURCES = {
     "statsapi_schedule": "https://statsapi.mlb.com/api/v1/schedule",
     "statsapi_playbyplay": "https://statsapi.mlb.com/api/v1/game/{game_pk}/playByPlay",
@@ -66,13 +56,9 @@ def record(name, ok, detail, note=""):
         print(f"         -> {note}")
 
 
-<<<<<<< HEAD
 # --------------------------------------------------------------------------
 # 1. Environment
 # --------------------------------------------------------------------------
-=======
-# 1. Environment
->>>>>>> 35bc728 (Add recent updates)
 def check_environment():
     print("\n1. ENVIRONMENT")
     record("python_version", sys.version_info >= (3, 9), platform.python_version(),
@@ -113,14 +99,9 @@ def check_environment():
             print(f"     missing {mod}  (needed for {why})")
 
 
-<<<<<<< HEAD
 # --------------------------------------------------------------------------
 # 2. Network reachability
 # --------------------------------------------------------------------------
-=======
-
-# 2. Network
->>>>>>> 35bc728 (Add recent updates)
 def check_network():
     print("\n2. SOURCE REACHABILITY")
     try:
@@ -154,16 +135,11 @@ def check_network():
             record(name, False, type(e).__name__, str(e)[:160])
 
 
-<<<<<<< HEAD
 # --------------------------------------------------------------------------
 # 3. The questions Week 3 actually has to answer
 # --------------------------------------------------------------------------
 def check_statcast_columns(date):
     """THE key question: does the 2026 Statcast export carry ABS/challenge columns?"""
-=======
-# 3. Checking if 2026 Statcast has the challenge columnbs
-def check_statcast_columns(date):
->>>>>>> 35bc728 (Add recent updates)
     print("\n3. STATCAST PITCH-LEVEL EXPORT")
     try:
         import pybaseball
@@ -190,11 +166,7 @@ def check_statcast_columns(date):
     (OUT_DIR).mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "statcast_columns.txt").write_text("\n".join(cols))
 
-<<<<<<< HEAD
     # Hunt for anything ABS-related. This determines your whole join strategy.
-=======
-    # ABS-related words
->>>>>>> 35bc728 (Add recent updates)
     kw = ("abs", "challeng", "review", "overturn", "robo", "hawkeye", "hawk_eye")
     hits = [c for c in cols if any(k in c.lower() for k in kw)]
     record(
@@ -221,11 +193,7 @@ def check_statcast_columns(date):
            f"{len(needed) - len(missing)}/{len(needed)} present",
            f"MISSING: {missing}" if missing else "")
 
-<<<<<<< HEAD
     # Win-probability columns come free with Statcast in recent seasons.
-=======
-    # Win-probability columns
->>>>>>> 35bc728 (Add recent updates)
     wp = [c for c in cols if "win_exp" in c.lower() or "run_exp" in c.lower()]
     record("statcast_win_expectancy", bool(wp), ", ".join(wp) if wp else "none",
            "Week 10 can start from these instead of the Stats API winProbability endpoint."
@@ -239,14 +207,9 @@ def check_statcast_columns(date):
 
     return df
 
-<<<<<<< HEAD
 
 def check_challenges(date, statcast_df):
     """Can we get challenge events, and do they join to pitches?"""
-=======
-#Do challenge events join to pitches
-def check_challenges(date, statcast_df):
->>>>>>> 35bc728 (Add recent updates)
     print("\n4. ABS CHALLENGE EVENTS (MLB Stats API)")
     try:
         import requests
@@ -273,11 +236,7 @@ def check_challenges(date, statcast_df):
     if not final:
         return
 
-<<<<<<< HEAD
     # Umpire hydration — needed for RQ4 and the umpire covariate.
-=======
-    # Umpires
->>>>>>> 35bc728 (Add recent updates)
     with_ump = 0
     for g in final:
         for o in g.get("officials", []):
@@ -289,11 +248,7 @@ def check_challenges(date, statcast_df):
            "" if with_ump == len(final)
            else "hydrate=officials is not populating; check the schedule params.")
 
-<<<<<<< HEAD
     # Pull challenges from a few games.
-=======
-    # Pulling test challenges
->>>>>>> 35bc728 (Add recent updates)
     sample = final[: min(5, len(final))]
     challenges = []
     for g in sample:
@@ -337,11 +292,7 @@ def check_challenges(date, statcast_df):
                "" if have_result == len(challenges)
                else "Missing outcome -> this is your MODEL TARGET. Must be fixed.")
 
-<<<<<<< HEAD
     # ---- THE JOIN TEST. This is the make-or-break check for Week 3. ----
-=======
-    # Joining
->>>>>>> 35bc728 (Add recent updates)
     if challenges and statcast_df is not None and not statcast_df.empty:
         sc = statcast_df
         pks = {c["game_pk"] for c in challenges}
