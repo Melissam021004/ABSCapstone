@@ -91,9 +91,14 @@ RULES = [
      "used for either the behaviour model or the policy."),
 
     ("regular_season_only",
-     lambda d: d["game_date"] <= pd.Timestamp("2026-10-01"),
-     "Postseason challenge behaviour may differ and the sample is small. "
-     "Revisit in Spring if you want a postseason transportability test."),
+     lambda d: d["game_type"].astype(str).str.upper().eq("R") if "game_type" in d.columns
+     else d["game_date"] <= pd.Timestamp("2026-10-01"),
+     "Regular-season games only (Statcast's game_type R). Postseason challenge behaviour "
+     "may differ and the sample is small; exhibition games before Opening Day carry no "
+     "challenge records (script 02 pulls regular-season games), so they would look like "
+     "games where nobody challenged. Until Nov 2026 this rule cut by date alone and kept "
+     "12 such games (1,430 called pitches). Revisit in Spring if you want a postseason "
+     "transportability test."),
 ]
 
 # How to treat each column's nulls. 'structural' means the null is meaningful and

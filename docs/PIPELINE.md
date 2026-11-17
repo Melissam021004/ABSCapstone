@@ -29,7 +29,7 @@ Scripts write to `./data` by default. Override with `export ABS_DATA_DIR=/path/t
 ```bash
 python scripts/00_env_check.py                  # Week 3 — run this first
 python scripts/01_statcast_pitches_2026.py      # ~1–3 hrs, resumable
-python scripts/02_abs_challenges_statsapi.py    # ~1–2 hrs, resumable
+python scripts/02_abs_challenges_statsapi.py    # ~1–2 hrs, resumable (--force re-extracts)
 python scripts/07_player_bios.py                # needs 01; gives batter heights
 python scripts/03_savant_abs_leaderboards.py    # validation aggregates
 python scripts/04_catcher_framing.py
@@ -79,14 +79,128 @@ Week 8 adds `abs_boosting.py` and `abs_pipeline.py`; Week 9 adds
 `abs_calibration.py` and `abs_predict.py` — **the only module Weeks 10–12 should
 import for p(s)**: `from src.abs_predict import load_production`.
 `figures_demo_week7/`, `figures_demo_week8/` and `figures_demo_week9/` show the
-outputs on synthetic data.
+outputs on synthetic data. They (and the "what the demo shows" parts of
+WEEK7–9.md) were made with the first, simpler demo season. Week 10 rebuilt the
+demo season as real baseball (runners, scores, walk-offs), so re-running
+`run_week89.py --demo` today gives different — equally synthetic — numbers (for
+example, the demo baseline becomes M2 · location instead of M1). Your real-data
+results don't change.
+
+Week 10 — win probability V(s), and what every challenge was worth (see `WEEK10.md`):
+
+```bash
+python scripts/run_week10.py --demo             # everything on a simulated season, ~6 min
+python scripts/run_week10.py                    # tests -> 19 -> 20 -> dashboard
+python scripts/01_statcast_pitches_2026.py --season 2025   # optional: another season (hours)
+python scripts/19_week10_winprob.py --seasons 2025,2026    # ...used for the win table
+```
+
+| Script | Produces |
+|---|---|
+| `19_week10_winprob.py` | `docs/WEEK10_REPORT.md`, `docs/week10_*.csv` (empirical table, run expectancy, call transitions, validation, sanity), `figures/week10/w10_01–06`, `models/winprob/` |
+| `20_week10_challenge_value.py` | `docs/WEEK10_VALUE_REPORT.md`, `docs/week10_value_*.csv`, `figures/week10/w10_07–12` |
+
+Week 10 adds `abs_gamestate.py` (pitches -> game states), `abs_winprob.py` (the
+structural model, the call transitions and `load_winprob()` — **the only module
+Weeks 11–12 should import for V(s)**) and `abs_value.py` (valuing challenges,
+natural experiments, skill tests). It reads every pitch from the raw Statcast
+pulls — it needs the score after each pitch (`post_home_score`, `post_away_score`),
+the runners and the plate-appearance result (`events`).
+
+Week 11 — the challenge decision as a Markov decision process (see `WEEK11.md` and
+`docs/MDP_SPEC.md`):
+
+```bash
+python scripts/run_week11.py --demo             # everything on a simulated season, ~1.5 min
+python scripts/run_week11.py                    # tests -> 21 -> dashboard
+python tests/test_mdp.py                        # the MDP's known answers on a toy game (~10 s)
+```
+
+| Script | Produces |
+|---|---|
+| `21_week11_mdp.py` | `docs/WEEK11_REPORT.md`, `docs/week11_*.csv` (pitch model, leverage checks, value of holding, thresholds, run levels, policies, 2026 decisions, umpire tiers), `docs/week11_summary.json`, `figures/week11/w11_01–06`, `models/mdp/` |
+
+Week 11 adds `abs_mdp.py` (the pitch-level game, the backward-induction solver,
+policies and a simulator; `load_mdp()` re-solves the saved model in a few seconds)
+and `abs_leverage.py` (Tango's Leverage Index from V(s)). It reads the same inputs
+as Week 10 — the locked p(s), the locked V(s), the cohort and every raw pitch — and
+changes none of them. `models/mdp/solution_*.npz` (~20 MB) stays out of git; the
+small pitch model and manifests are committed.
+
+The checkpoint showcase and two data checks (November 2026):
+
+```bash
+python scripts/24_challenge_count_check.py               # does the data have every 2026 challenge? (seconds, offline)
+python scripts/22_showcase_examples.py                   # real-game examples + slides for the checkpoint (a few minutes)
+python scripts/22_showcase_examples.py --video-links     # also look up each pitch's Savant video (internet)
+python scripts/23_umpire_roster_check.py                 # why there are more plate umpires than MLB's 76
+python scripts/23_umpire_roster_check.py --staff docs/mlb_umpire_staff_2026.txt   # exact split from a list of names
+python tests/test_challenge_extract.py                   # script 02 finds a review wherever the feed records it
+```
+
+| Script | Produces |
+|---|---|
+| `22_showcase_examples.py` | `docs/SHOWCASE.md` (presenter notes: a glossary, a running order, every example in plain words with its replay link, the quiz answers), `docs/showcase_examples.csv`, `figures/showcase/` (about 55 slides, each with its data CSV) |
+| `23_umpire_roster_check.py` | `docs/UMPIRE_CHECK.md`, `docs/umpire_roster_check.csv` |
+| `24_challenge_count_check.py` | `docs/CHALLENGE_COUNT_CHECK.md`, `docs/challenge_count_check.csv` |
+
+Script 22 needs Weeks 9–11 (`models/production`, `models/winprob`, `models/mdp`) and reads
+the cohort, every raw pitch and the player bios (for names). It changes nothing upstream.
+
+**The challenge count.** The first version of script 02 looked for a review only on the
+pitch event. The Stats API can also record one on a separate event after the pitch, or on
+the plate appearance itself, which is where a review of strike three or ball four can land.
+The season came out at 7,897 challenges against MLB's official 10,557. The fixed extractor
+looks in all three places and keeps only ABS challenges: a manager's replay review of a tag
+play doesn't count. It also saves each game's raw feed, so the next re-extraction needs no
+internet. It counts a review only when a batter, catcher or pitcher made it. On the full 2026
+season it finds 10,558 challenges: batters 4,766, catchers 5,613, pitchers 179, against MLB's
+4,766, 5,609 and 182. The team-games with 5+ challenges came out at 246, the same as MLB's.
+
+To apply it:
+
+```bash
+python scripts/02_abs_challenges_statsapi.py --force      # once: downloads every game again (~20–30 min)
+python scripts/run_week5.py --spine-from-table           # 08–11 on the pitches already in the table
+python scripts/13_define_cohort.py                       # new cohort fingerprint
+python scripts/24_challenge_count_check.py               # every stage within ~2% of MLB's count
+```
+
+Then re-run Weeks 10–11, and refit p(s) (Weeks 7–9) as a new version.
+
+`--spine-from-table` makes script 08 take its pitches from the existing table instead of the raw
+Statcast files. Use it while `data/raw/statcast/` holds less than a full season. It works like this:
+
+- **Always rebuilt:** the challenge columns and everything computed from kept inputs (the ABS zone,
+  opportunities).
+- **Rebuilt or kept:** batter heights, positions, win probability, framing and umpire accuracy are
+  rebuilt when their raw file is there, and kept from the table when it isn't.
+- **Backup:** the first such run saves the old table as `challenge_inventory_2026_prev.*`, and later
+  runs never overwrite it.
+- **Safety stop:** it stops if the table has lost columns its backup still has, and prints the `cp`
+  command to restore the backup.
+
+With unchanged challenge records, it reproduces the table exactly (checked with every raw file
+present and with all four optional files missing). Script 08 also stops rather than replace a
+full-season table with one built from a partial raw folder (`--allow-smaller` overrides that).
+
+Two checks changed in November 2026:
+
+- **Script 08's pitch-number check.** Script 08 checks every challenge against the count the Stats
+  API recorded. A challenge that lands on a swing, or on a called pitch at a different count, moves
+  to the called pitch at that count in the same at-bat, where the two sources numbered the pitches
+  differently. Those rows are marked `challenge_rekeyed`.
+- **QA check ZONE_PREDICTS_OUTCOME.** It now compares the zone with the ORIGINAL call, worked out
+  from who challenged. 2026 Statcast records the final call on a challenged pitch (Weeks 8–9), so
+  against the recorded call every overturned challenge looked like a miss. Agreement collapsed to the
+  share upheld (46%).
 
 The dashboard — a static site you can host free on GitHub Pages
 (see `dashboard/README.md`):
 
 ```bash
 python scripts/12_export_dashboard_data.py     # Week 5 table -> dashboard/data.js
-python scripts/18_export_model_dashboard.py    # Weeks 7–9 results -> dashboard/model_data.js
+python scripts/18_export_model_dashboard.py    # Weeks 7–11 results -> dashboard/model_data.js
 open dashboard/index.html
 python scripts/14_build_single_file.py         # one-file copy for email/archive
 ```
@@ -129,7 +243,7 @@ where it left off. Start them in the morning.
 |---|---|---|
 | `00_env_check` | feasibility report JSON + printed table | — |
 | `01_statcast_pitches_2026` | `raw/statcast/statcast_2026_<YYYY-MM>.parquet` | pitch |
-| `02_abs_challenges_statsapi` | `raw/challenges/abs_challenges_2026.parquet` | challenge event |
+| `02_abs_challenges_statsapi` | `raw/challenges/abs_challenges_2026.parquet` (+ raw feeds in `raw/challenges/pbp/`) | challenge event |
 | `03_savant_abs_leaderboards` | `raw/savant/abs_leaderboard_*.csv` | player/team-season |
 | `04_catcher_framing` | `raw/savant/catcher_framing_*.csv` | catcher-season |
 | `05_umpire_data` | `raw/umpires/umpire_accuracy_derived_2026.parquet` | umpire, umpire-game |

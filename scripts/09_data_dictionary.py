@@ -198,6 +198,12 @@ REGISTRY = {
     "challenger_name": (S_API, "identifier", "Challenger's name.", ""),
     "challenging_side": (S_API, "LEAKAGE RISK", "'home' or 'away'.", "See challenger_role."),
     "challenge_call_code": (S_API, "LEAKAGE RISK", "Original call code on a challenged pitch.", ""),
+    "challenge_rekeyed": (S_DERIVED, "metadata",
+                          "The challenge was moved to the called pitch at the Stats API's "
+                          "count in the same at-bat, because the two sources numbered "
+                          "that at-bat's pitches differently.",
+                          "Script 08's count check (November 2026). A handful a season; "
+                          "never a feature."),
     "challenge_description": (S_API, "LEAKAGE RISK", "Free-text description of the review.", ""),
 
     # ---------------- context ----------------

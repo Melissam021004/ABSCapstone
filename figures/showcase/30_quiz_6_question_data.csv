@@ -1,0 +1,2 @@
+game_pk,at_bat_number,pitch_number,inning,half,p_s,dwp,li,p_star,challenged,overturned,plate_x,plate_z,abs_zone_top,abs_zone_bot,zone_dist_in
+822699,29,6,4,0,1.0,0.05405922964466159,1.579697705083813,0.4501983564613562,False,False,1.1860208896855235,2.6514071001704385,3.299166666666667,1.6650000000000003,4.2822506762262815

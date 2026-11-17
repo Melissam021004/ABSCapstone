@@ -118,36 +118,9 @@ attack_direction,Float64,46.15,332359,-179.8718,179.9709,-1.0347,,Statcast (scri
 swing_path_tilt,Float64,46.15,332353,0.4288,89.9856,32.3252,,Statcast (script 01),UNDOCUMENTED,Not yet documented — a Statcast column this project does not use.,Look it up in Savant's CSV documentation and add it to REGISTRY in scripts/09_data_dictionary.py if you start using it.
 intercept_ball_minus_batter_pos_x_inches,Float64,46.09,331916,4.0826,77.7269,36.6562,,Statcast (script 01),UNDOCUMENTED,Not yet documented — a Statcast column this project does not use.,Look it up in Savant's CSV documentation and add it to REGISTRY in scripts/09_data_dictionary.py if you start using it.
 intercept_ball_minus_batter_pos_y_inches,Float64,46.09,331916,-11.9796,71.9998,30.2432,,Statcast (script 01),UNDOCUMENTED,Not yet documented — a Statcast column this project does not use.,Look it up in Savant's CSV documentation and add it to REGISTRY in scripts/09_data_dictionary.py if you start using it.
-challenger_role,str,1.1,3,,,,"catcher, batter, pitcher",MLB Stats API (script 02),LEAKAGE RISK,"batter, catcher or pitcher.",Known only once a challenge happened. Fine for splitting results by role; not an input to a model predicting whether a challenge occurs.
-challenger_id,float64,1.1,607,457705.0,823550.0,663264.6275,,MLB Stats API (script 02),LEAKAGE RISK,Challenger's MLBAM id.,See challenger_role.
-challenger_name,str,1.1,606,,,,"Keibert Ruiz, Francisco Alvarez, Marcus Semien",MLB Stats API (script 02),identifier,Challenger's name.,
-challenging_side,str,1.1,2,,,,"home, away",MLB Stats API (script 02),LEAKAGE RISK,'home' or 'away'.,See challenger_role.
-is_overturned,object,1.11,2,,,,"True, False",MLB Stats API (script 02),target,The challenge succeeded and the call was reversed.,"The target for the OVERTURN model p(s). Null on unchallenged pitches by construction, not by data loss."
-challenge_call_code,str,1.11,8,,,,"C, B, F",MLB Stats API (script 02),LEAKAGE RISK,Original call code on a challenged pitch.,
-challenge_description,str,1.11,7,,,,"Called Strike, Ball, Foul",MLB Stats API (script 02),LEAKAGE RISK,Free-text description of the review.,
-was_challenged,bool,100.0,2,,,,True 1.1%,MLB Stats API (script 02),target,A challenge was actually made on this pitch.,The target for the BEHAVIOUR model (did they challenge?). Never a feature.
-batting_side,str,100.0,2,,,,"away, home",Derived (script 08),feature,'home' or 'away' — which side is batting.,Derived from inning_topbot.
-fielding_side,str,100.0,2,,,,"home, away",Derived (script 08),feature,The side in the field.,
-challenges_remaining_batting,int8,100.0,3,0.0,2.0,1.7085,,Derived (script 08),feature,Challenges the batting side has BEFORE this pitch (0-2).,"DERIVED, NOT PUBLISHED. Walked forward per game: start at 2, a failed challenge costs one, a successful one is retained, and in extra innings a side already at zero is granted one for that inning. This is the MDP's state variable r — hand-verify it (script 11)."
-challenges_remaining_fielding,int8,100.0,3,0.0,2.0,1.7068,,Derived (script 08),feature,Challenges the fielding side has BEFORE this pitch (0-2).,See above.
 batter_height_ft,float64,99.91,15,5.4167,6.5833,6.0076,,MLB Stats API people (script 07),feature,Listed batter height in feet.,Self-reported and rounded to the inch; a 1-inch error moves the zone edge about half an inch.
-abs_zone_top,float64,100.0,74,2.8979,3.5221,3.2141,,Derived (script 08),feature,"ABS zone top = 53.5% of batter height, ft.",Falls back to sz_top when height is missing — check abs_zone_source.
-abs_zone_bot,float64,100.0,72,1.4625,1.7775,1.6221,,Derived (script 08),feature,"ABS zone bottom = 27% of batter height, ft.",
-abs_zone_source,str,100.0,2,,,,"batter_height, statcast_sz",Derived (script 08),metadata,'batter_height' (correct) or 'statcast_sz' (fallback).,Any row with 'statcast_sz' has an approximated zone. Report the share in your limitations.
-zone_dist_ft,float64,99.63,717527,-0.8292,7.9832,0.1366,,Derived (script 08),feature,"Signed distance from the BALL'S SURFACE to the ABS zone, ft. Negative = overlapping the zone = ABS strike.","The ball's 1.45-inch radius is already subtracted, because any part of the ball touching the zone is a strike."
-zone_dist_in,float64,99.63,717527,-9.95,95.7983,1.6398,,Derived (script 08),feature,"Same, in inches. The headline feature.",Highly non-linear near zero — give it a spline or let a tree split it.
-abs_strike,bool,100.0,2,,,,True 47.3%,Derived (script 08),feature,True if ABS would call this a strike.,
-sc_zone_dist_in,float64,99.63,717527,-9.95,95.9879,1.6384,,Derived (script 08),metadata,"Distance using Statcast's zone instead, for robustness checks.",Comparison only. Do not model on it.
-zone_defs_disagree,bool,100.0,2,,,,True 0.3%,Derived (script 08),metadata,True where the ABS zone and Statcast's zone disagree.,"Where the challenges live. Good diagnostic, weak feature."
-is_called_pitch,bool,100.0,2,,,,True 51.8%,Derived (script 08),metadata,Taken pitch — called strike or ball.,
-called_strike,bool,100.0,2,,,,True 16.1%,Derived (script 08),feature,The umpire called this pitch a strike.,
 pitcher_pos,str,99.83,11,,,,"P, DH, 3B",MLB Stats API people (script 07),metadata,Pitcher's listed primary position.,Used only to detect position players pitching.
 position_player_pitching,bool,100.0,2,,,,True 0.5%,Derived (script 08),metadata,A position player is on the mound.,Challenges are not available in these at-bats.
-is_challenge_opportunity_batting,bool,100.0,2,,,,True 15.5%,Derived (script 08),metadata,"The batting side could have challenged: called strike, a challenge in hand, no position player pitching.",The model's denominator for batter behaviour.
-is_challenge_opportunity_fielding,bool,100.0,2,,,,True 34.3%,Derived (script 08),metadata,Same for the fielding side on a called ball.,
-is_challenge_opportunity,bool,100.0,2,,,,True 49.8%,Derived (script 08),metadata,Either side had an opportunity.,Savant reports ~50% of pitches.
-would_be_overturned,bool,100.0,2,,,,True 2.6%,Derived (script 08),target,"Counterfactual: the umpire's call disagrees with the ABS zone, so a challenge here would have succeeded.","LEAKAGE RISK AS A FEATURE. This is what lets you label unchallenged opportunities, which is the whole point of the denominator — but it is an outcome, so it belongs on the left-hand side of the model only."
-is_reasonable_pitch,boolean,100.0,2,,,,True 5.0%,Derived (script 08),metadata,Opportunity that was either genuinely wrong or within 3 inches of the edge.,A simplified stand-in for Savant's 'reasonable pitch' (~5%); theirs also uses RE288 run value.
 home_win_prob,float64,99.53,983,0.0,100.0,50.6955,,MLB Stats API winProbability (script 06),feature,Home team win probability entering the PA.,
 away_win_prob,float64,99.53,983,0.0,100.0,49.3045,,MLB Stats API winProbability (script 06),feature,Away team win probability entering the PA.,
 bat_win_prob,float64,99.53,1343,0.0,100.0,51.1817,,MLB Stats API winProbability (script 06),feature,Win probability for the batting side.,This is V(s) for the side deciding whether to challenge.
@@ -159,9 +132,37 @@ catcher_rv_12,float64,81.6,7,-3.0,3.0,0.0235,,Savant catcher framing (script 04)
 catcher_rv_13,float64,81.6,4,-2.0,1.0,-0.1101,,Savant catcher framing (script 04),feature,Season framing metric for the catcher on this pitch.,"Season-level, so it is constant within a catcher-season and partly reflects the same 2026 challenges you are modelling."
 catcher_rv_14,float64,81.6,9,-4.0,6.0,0.1941,,Savant catcher framing (script 04),feature,Season framing metric for the catcher on this pitch.,"Season-level, so it is constant within a catcher-season and partly reflects the same 2026 challenges you are modelling."
 catcher_rv_16,float64,81.6,9,-4.0,5.0,-0.1122,,Savant catcher framing (script 04),feature,Season framing metric for the catcher on this pitch.,"Season-level, so it is constant within a catcher-season and partly reflects the same 2026 challenges you are modelling."
-hp_umpire,str,99.53,91,,,,"Austin Jones, Jen Pawol, Alfonso Márquez",MLB Stats API (script 02),feature,Home-plate umpire name.,From the schedule endpoint with hydrate=officials.
-hp_umpire_id,float64,99.53,91,427013.0,691042.0,536621.4286,,MLB Stats API (script 02),identifier,Home-plate umpire id.,
 ump_accuracy,float64,99.53,91,0.9322,0.9623,0.9497,,Derived umpire accuracy (script 05),feature,Season accuracy metric for the home-plate umpire.,Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8.
 ump_borderline_accuracy,float64,99.53,90,0.7188,0.8338,0.7856,,Derived umpire accuracy (script 05),feature,Season accuracy metric for the home-plate umpire.,Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8.
 ump_missed_strike_rate,float64,99.53,91,0.0142,0.0281,0.0213,,Derived umpire accuracy (script 05),feature,Season accuracy metric for the home-plate umpire.,Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8.
 ump_missed_ball_rate,float64,99.53,91,0.0183,0.0515,0.029,,Derived umpire accuracy (script 05),feature,Season accuracy metric for the home-plate umpire.,Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8.
+challenger_role,str,1.47,3,,,,"catcher, batter, pitcher",MLB Stats API (script 02),LEAKAGE RISK,"batter, catcher or pitcher.",Known only once a challenge happened. Fine for splitting results by role; not an input to a model predicting whether a challenge occurs.
+challenger_id,float64,1.47,659,457705.0,823550.0,663228.455,,MLB Stats API (script 02),LEAKAGE RISK,Challenger's MLBAM id.,See challenger_role.
+challenger_name,str,1.47,658,,,,"Keibert Ruiz, Francisco Alvarez, Luis Torrens",MLB Stats API (script 02),identifier,Challenger's name.,
+challenging_side,str,1.47,2,,,,"home, away",MLB Stats API (script 02),LEAKAGE RISK,'home' or 'away'.,See challenger_role.
+is_overturned,object,1.47,2,,,,"True, False",MLB Stats API (script 02),target,The challenge succeeded and the call was reversed.,"The target for the OVERTURN model p(s). Null on unchallenged pitches by construction, not by data loss."
+challenge_call_code,str,1.47,2,,,,"C, B",MLB Stats API (script 02),LEAKAGE RISK,Original call code on a challenged pitch.,
+challenge_description,str,1.47,1978,,,,"Called Strike, Ball, Luis Torrens challenged (pitch result), call on the field was confirmed: Brady House walks.",MLB Stats API (script 02),LEAKAGE RISK,Free-text description of the review.,
+challenge_rekeyed,bool,100.0,2,,,,True 0.0%,Derived (script 08),metadata,"The challenge was moved to the called pitch at the Stats API's count in the same at-bat, because the two sources numbered that at-bat's pitches differently.",Script 08's count check (November 2026). A handful a season; never a feature.
+was_challenged,bool,100.0,2,,,,True 1.5%,MLB Stats API (script 02),target,A challenge was actually made on this pitch.,The target for the BEHAVIOUR model (did they challenge?). Never a feature.
+batting_side,str,100.0,2,,,,"away, home",Derived (script 08),feature,'home' or 'away' — which side is batting.,Derived from inning_topbot.
+fielding_side,str,100.0,2,,,,"home, away",Derived (script 08),feature,The side in the field.,
+challenges_remaining_batting,int8,100.0,3,0.0,2.0,1.5875,,Derived (script 08),feature,Challenges the batting side has BEFORE this pitch (0-2).,"DERIVED, NOT PUBLISHED. Walked forward per game: start at 2, a failed challenge costs one, a successful one is retained, and in extra innings a side already at zero is granted one for that inning. This is the MDP's state variable r — hand-verify it (script 11)."
+challenges_remaining_fielding,int8,100.0,3,0.0,2.0,1.5817,,Derived (script 08),feature,Challenges the fielding side has BEFORE this pitch (0-2).,See above.
+abs_zone_top,float64,100.0,74,2.8979,3.5221,3.2141,,Derived (script 08),feature,"ABS zone top = 53.5% of batter height, ft.",Falls back to sz_top when height is missing — check abs_zone_source.
+abs_zone_bot,float64,100.0,72,1.4625,1.7775,1.6221,,Derived (script 08),feature,"ABS zone bottom = 27% of batter height, ft.",
+abs_zone_source,str,100.0,2,,,,"batter_height, statcast_sz",Derived (script 08),metadata,'batter_height' (correct) or 'statcast_sz' (fallback).,Any row with 'statcast_sz' has an approximated zone. Report the share in your limitations.
+zone_dist_ft,float64,99.63,717527,-0.8292,7.9832,0.1366,,Derived (script 08),feature,"Signed distance from the BALL'S SURFACE to the ABS zone, ft. Negative = overlapping the zone = ABS strike.","The ball's 1.45-inch radius is already subtracted, because any part of the ball touching the zone is a strike."
+zone_dist_in,float64,99.63,717527,-9.95,95.7983,1.6398,,Derived (script 08),feature,"Same, in inches. The headline feature.",Highly non-linear near zero — give it a spline or let a tree split it.
+abs_strike,bool,100.0,2,,,,True 47.3%,Derived (script 08),feature,True if ABS would call this a strike.,
+sc_zone_dist_in,float64,99.63,717527,-9.95,95.9879,1.6384,,Derived (script 08),metadata,"Distance using Statcast's zone instead, for robustness checks.",Comparison only. Do not model on it.
+zone_defs_disagree,bool,100.0,2,,,,True 0.3%,Derived (script 08),metadata,True where the ABS zone and Statcast's zone disagree.,"Where the challenges live. Good diagnostic, weak feature."
+is_called_pitch,bool,100.0,2,,,,True 51.8%,Derived (script 08),metadata,Taken pitch — called strike or ball.,
+called_strike,bool,100.0,2,,,,True 16.1%,Derived (script 08),feature,The umpire called this pitch a strike.,
+is_challenge_opportunity_batting,bool,100.0,2,,,,True 15.0%,Derived (script 08),metadata,"The batting side could have challenged: called strike, a challenge in hand, no position player pitching.",The model's denominator for batter behaviour.
+is_challenge_opportunity_fielding,bool,100.0,2,,,,True 33.0%,Derived (script 08),metadata,Same for the fielding side on a called ball.,
+is_challenge_opportunity,bool,100.0,2,,,,True 47.9%,Derived (script 08),metadata,Either side had an opportunity.,Savant reports ~50% of pitches.
+would_be_overturned,bool,100.0,2,,,,True 2.6%,Derived (script 08),target,"Counterfactual: the umpire's call disagrees with the ABS zone, so a challenge here would have succeeded.","LEAKAGE RISK AS A FEATURE. This is what lets you label unchallenged opportunities, which is the whole point of the denominator — but it is an outcome, so it belongs on the left-hand side of the model only."
+is_reasonable_pitch,boolean,100.0,2,,,,True 4.8%,Derived (script 08),metadata,Opportunity that was either genuinely wrong or within 3 inches of the edge.,A simplified stand-in for Savant's 'reasonable pitch' (~5%); theirs also uses RE288 run value.
+hp_umpire,str,99.53,91,,,,"Austin Jones, Jen Pawol, Alfonso Márquez",MLB Stats API (script 02),feature,Home-plate umpire name.,From the schedule endpoint with hydrate=officials.
+hp_umpire_id,float64,99.53,91,427013.0,691042.0,536621.4286,,MLB Stats API (script 02),identifier,Home-plate umpire id.,

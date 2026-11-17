@@ -14,6 +14,10 @@ each box ticked or not based on what actually happened.
 
     python scripts/run_week5.py --strict   # QA warnings also stop the run
 
+    python scripts/run_week5.py --spine-from-table
+                                           # re-join new challenge records on the
+                                           # pitches already in the table (no re-pull)
+
 Steps:
     08  build the analysis-ready table   (plan steps 1-6)
     09  generate the data dictionary     (plan step 7)
@@ -94,6 +98,9 @@ def main():
                     help="QA warnings also fail the run")
     ap.add_argument("--skip-verify", action="store_true",
                     help="skip step 11 (not recommended)")
+    ap.add_argument("--spine-from-table", action="store_true",
+                    help="script 08 takes the pitches from the existing table instead of the "
+                         "raw Statcast files (re-join new challenge records without a re-pull)")
     args = ap.parse_args()
 
     if args.demo:
@@ -133,6 +140,8 @@ def main():
             continue
         if script.startswith("10") and args.strict:
             extra = extra + ["--strict"]
+        if script.startswith("08") and args.spine_from_table:
+            extra = extra + ["--spine-from-table"]
 
         print(f"\n{'─' * 78}")
         print(f"RUNNING  {script}   — {label}  ({maps_to})")

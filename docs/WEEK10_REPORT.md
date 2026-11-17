@@ -1,12 +1,12 @@
 # Week 10 — Win Probability Component
 
-Generated 2026-11-04 09:14 by `scripts/19_week10_winprob.py` · seasons 2026 · 2,428 games · 5-fold out-of-game scoring · 500 game-level bootstrap resamples
+Generated 2026-11-17 16:21 by `scripts/19_week10_winprob.py` · seasons 2026 · 2,428 games · 5-fold out-of-game scoring · 500 game-level bootstrap resamples
 
 > Read this next to `WEEK10.md`, which explains every section.
 
 ## The locked V(s)
 
-**V(s) 2026.11.04-824ec8be = structural (Markov) model + uncalibrated** · input: inning, half, outs, runners, count, score
+**V(s) 2026.11.17-824ec8be = structural (Markov) model + uncalibrated** · input: inning, half, outs, runners, count, score
 
 - Out-of-fold (every game scored by a model that never saw it): Brier 0.1585 [0.1534, 0.1629], calibration intercept -0.03 [-0.13, +0.06], slope 1.05 [0.99, 1.12].
 - The boosted model (the plan's model version): Δ Brier vs structural +0.00056 [+0.00012, +0.00099] — **worse**.
@@ -173,7 +173,7 @@ Ranges from the published win-expectancy tables (Tango; FanGraphs) for a modern 
 
 ## 6. The locked bundle (`models/winprob/`)
 
-- version **2026.11.04-824ec8be**, created 2026-11-04T09:14:27
+- version **2026.11.17-824ec8be**, created 2026-11-17T16:21:54
 - structural model fitted on 646,346 pitches (innings 1–8) from 2,428 games; calibration: uncalibrated
 - self-check: reloading through `src/abs_winprob.py` reproduces every plate-appearance start to within 3.0e-08
 - every file hashed in `manifest.json`; `load_winprob()` refuses a bundle that changed

@@ -1,19 +1,19 @@
 # Week 10 — What the 2026 challenges were worth
 
-Generated 2026-11-04 09:19 by `scripts/20_week10_challenge_value.py` · p(s) 2026.10.29-b81183b4 · V(s) 2026.11.04-824ec8be · cohort `419af01ad9eee03f` · 1000 game-level bootstrap resamples · 999 permutations per skill test
+Generated 2026-11-17 16:22 by `scripts/20_week10_challenge_value.py` · p(s) 2026.10.29-b81183b4 · V(s) 2026.11.17-824ec8be · cohort `419af01ad9eee03f` · 1000 game-level bootstrap resamples · 999 permutations per skill test
 
 > Read this next to `WEEK10.md` (Part B), which explains every section.
 
 ## In one paragraph
 
-Umpires' wrong calls moved **272.3 wins** across the league (23,428 expected wrong calls on 370,883 called pitches). Overturned challenges won back **57.5** of them (21.1%). The 7,897 challenges were worth 57.5 wins in expectation and delivered 57.5. The best team added 2.50 wins with challenges; the median team 1.91.
+Umpires' wrong calls moved **308.4 wins** across the league (24,083 expected wrong calls on 370,883 called pitches). Overturned challenges won back **102.2** of them (33.1%). The 10,535 challenges were worth 102.2 wins in expectation and delivered 102.2. The best team added 4.55 wins with challenges; the median team 3.33.
 
 ## 0. Inputs
 
-- recorded call matches who challenged on 100.0% of 3,453 upheld and 0.0% of 4,417 overturned challenges
-- verdict: FINAL (post-review) call recorded — repaired from who challenged (4,417 challenged pitches corrected)
-- 370,909 called pitches valued with p(s) and V(s) (26 with a location outside p(s)'s range skipped); 358,321 challenge opportunities (a call against a side with a challenge left, worked out from the umpire's ORIGINAL call); 7,897 challenges.
-- **Where p(s) is used.** p(s) learned from challenged pitches, which sit between -4.9 and +4.4 inches against the call (99% of them). Beyond that range its curve is held flat, so a call that is clearly right — a strike in the middle of the zone — would still get the small chance of being wrong it had at the edge of the range. There the ABS call isn't in doubt, so it is taken from the zone geometry instead: 192,150 called pitches further on the right side count as calls that stand, 70 further on the wrong side as calls ABS would reverse. Inside the range, the locked p(s) is used unchanged.
+- recorded call matches who challenged on 100.0% of 4,861 upheld and 0.0% of 5,674 overturned challenges
+- verdict: FINAL (post-review) call recorded — repaired from who challenged (5,674 challenged pitches corrected)
+- 370,909 called pitches valued with p(s) and V(s) (26 with a location outside p(s)'s range skipped); 345,141 challenge opportunities (a call against a side with a challenge left, worked out from the umpire's ORIGINAL call); 10,535 challenges.
+- **Where p(s) is used.** p(s) learned from challenged pitches, which sit between -4.5 and +4.3 inches against the call (99% of them). Beyond that range its curve is held flat, so a call that is clearly right — a strike in the middle of the zone — would still get the small chance of being wrong it had at the edge of the range. There the ABS call isn't in doubt, so it is taken from the zone geometry instead: 203,826 called pitches further on the right side count as calls that stand, 91 further on the wrong side as calls ABS would reverse. Inside the range, the locked p(s) is used unchanged.
 
 ## 1. What a call is worth
 
@@ -21,25 +21,25 @@ Win probability the challenging side gains if the call is overturned (`dwp`), an
 
 | set | n | mean | median | 90th percentile | runs (mean) |
 |---|---:|---:|---:|---:|---:|
-| every opportunity | 358,321 | +1.36 pts | +0.84 pts | +3.00 pts | +0.150 |
-| wrong calls (p(s) ≥ 50%) | 21,995 | +1.14 pts | +0.76 pts | +2.42 pts | +0.126 |
-| challenged | 7,897 | +1.40 pts | +0.90 pts | +3.08 pts | +0.141 |
-| overturned | 4,424 | +1.30 pts | +0.86 pts | +2.88 pts | +0.133 |
+| every opportunity | 345,141 | +1.36 pts | +0.84 pts | +2.98 pts | +0.149 |
+| wrong calls (p(s) ≥ 50%) | 22,332 | +1.27 pts | +0.79 pts | +2.75 pts | +0.139 |
+| challenged | 10,535 | +2.05 pts | +1.13 pts | +4.90 pts | +0.209 |
+| overturned | 5,674 | +1.80 pts | +1.04 pts | +4.28 pts | +0.187 |
 
 Most calls are worth little; a few are worth a lot. The ten most valuable overturns:
 
 | date | inning | score (home–away) | count | outs | challenging team | role | gain |
 |---|---|---|---|---:|---|---|---:|
+| Apr 16 | 9 top | 3–3 | 3-2 | 1 | CWS (Edgar Quero) | catcher | +36.6 pts |
+| Jun 27 | 9 top | 7–6 | 3-2 | 0 | CIN (Elly De La Cruz) | batter | +27.1 pts |
 | Jun 06 | 9 top | 6–5 | 3-1 | 2 | STL (Jimmy Crooks) | catcher | +27.1 pts |
+| Jun 08 | 7 bot | 2–5 | 3-2 | 1 | SEA (Jhonny Pereda) | catcher | +25.8 pts |
+| Aug 05 | 6 bot | 0–3 | 3-2 | 1 | STL (Iván Herrera) | catcher | +24.4 pts |
+| Aug 09 | 9 bot | 3–4 | 3-2 | 1 | BOS (Caleb Durbin) | batter | +23.9 pts |
+| May 03 | 5 top | 4–4 | 3-2 | 1 | ATL (Eli White) | batter | +21.5 pts |
+| May 20 | 4 bot | 1–3 | 3-2 | 2 | COL (Kyle Karros) | batter | +21.2 pts |
+| Jun 30 | 4 bot | 1–3 | 3-2 | 2 | HOU (Jose Altuve) | batter | +21.2 pts |
 | Sep 17 | 10 bot | 3–4 | 1-2 | 1 | LAA (Mike Trout) | batter | +20.4 pts |
-| May 31 | 10 top | 2–2 | 1-2 | 1 | AZ (Adrian Del Castillo) | batter | +15.2 pts |
-| Jul 27 | 9 bot | 2–3 | 0-2 | 2 | WSH (Luis García Jr.) | batter | +13.9 pts |
-| Sep 08 | 10 top | 2–2 | 2-2 | 1 | AZ (Nolan Arenado) | batter | +13.8 pts |
-| Jun 01 | 10 top | 2–2 | 2-2 | 0 | NYM (Juan Soto) | batter | +13.0 pts |
-| Sep 23 | 4 bot | 1–2 | 3-1 | 2 | SD (Ethan Salas) | catcher | +12.4 pts |
-| Jun 06 | 9 top | 6–5 | 1-0 | 2 | CIN (Sal Stewart) | batter | +11.9 pts |
-| Apr 04 | 9 top | 9–7 | 2-2 | 1 | MIA (Owen Caissie) | batter | +11.5 pts |
-| Aug 17 | 10 top | 5–5 | 2-2 | 2 | CWS (Braden Montgomery) | batter | +11.4 pts |
 
 Every challenge with its value: `docs/week10_value_challenges.csv`.
 
@@ -49,9 +49,9 @@ An overturned strike keeps an at-bat (or an inning) alive; an overturned ball ta
 
 | challenging side | n | after overturned | after upheld | gap [95%] | model's predicted gap |
 |---|---:|---:|---:|---|---:|
-| batting | 2,890 | 0.526 | 0.499 | +0.027 [-0.048, +0.105] | +0.053 |
-| fielding | 3,774 | 0.497 | 0.519 | -0.022 [-0.096, +0.043] | -0.074 |
-| all | 6,664 | 0.510 | 0.511 | -0.001 [-0.050, +0.049] | -0.019 |
+| batting | 3,991 | 0.553 | 0.378 | +0.175 [+0.115, +0.234] | +0.200 |
+| fielding | 4,968 | 0.412 | 0.599 | -0.187 [-0.245, -0.128] | -0.210 |
+| all | 8,959 | 0.469 | 0.489 | -0.020 [-0.062, +0.023] | -0.023 |
 
 Read: on a batting-side challenge the gap should be positive (an overturned strike helps the batting team score); on a fielding-side challenge negative (an overturned ball takes runs away). If the observed gap's interval covers the model's prediction, the run-expectancy engine behind V(s) is right about what a challenge does to an inning.
 
@@ -59,9 +59,9 @@ Read: on a batting-side challenge the gap should be positive (an overturned stri
 
 | challenging side | n | won after overturned | won after upheld | gap [95%] | predicted |
 |---|---:|---:|---:|---|---:|
-| batting | 3,461 | 48.9% | 45.4% | +3.5 pts [+0.2 pts, +7.1 pts] | +2.7 pts |
-| fielding | 4,436 | 49.3% | 53.6% | -4.3 pts [-7.2 pts, -1.4 pts] | -2.4 pts |
-| all | 7,897 | 49.1% | 50.2% | -1.0 pts [-3.2 pts, +1.0 pts] | -0.3 pts |
+| batting | 4,757 | 48.9% | 45.6% | +3.3 pts [+0.3 pts, +6.0 pts] | +3.2 pts |
+| fielding | 5,778 | 50.5% | 52.6% | -2.1 pts [-4.7 pts, +0.5 pts] | -0.9 pts |
+| all | 10,535 | 49.8% | 49.1% | +0.7 pts [-1.2 pts, +2.5 pts] | +1.3 pts |
 
 The game-level gap is a few points at most and games are noisy, so expect a wide interval; the check is that it doesn't contradict the prediction.
 
@@ -71,16 +71,16 @@ At the start of each half-inning, averaged over every game and team: how much wi
 
 | start of | stakes still ahead | best single wrong call ahead | best two | a wrong call now is worth |
 |---|---:|---:|---:|---:|
-| 1 top | +5.58 pts | +2.45 pts | +3.64 pts | +1.15 pts |
-| 2 top | +4.91 pts | +2.29 pts | +3.37 pts | +1.16 pts |
-| 3 top | +4.29 pts | +2.13 pts | +3.08 pts | +1.08 pts |
-| 4 top | +3.68 pts | +1.97 pts | +2.79 pts | +1.11 pts |
-| 5 top | +3.11 pts | +1.78 pts | +2.48 pts | +1.08 pts |
-| 6 top | +2.50 pts | +1.55 pts | +2.09 pts | +1.08 pts |
-| 7 top | +1.91 pts | +1.27 pts | +1.66 pts | +1.09 pts |
-| 8 top | +1.32 pts | +0.96 pts | +1.19 pts | +1.11 pts |
-| 9 top | +0.74 pts | +0.59 pts | +0.69 pts | +1.10 pts |
-| 9 bot | +0.82 pts | +0.66 pts | +0.77 pts | +1.78 pts |
+| 1 top | +6.32 pts | +2.90 pts | +4.26 pts | +1.27 pts |
+| 2 top | +5.56 pts | +2.70 pts | +3.93 pts | +1.29 pts |
+| 3 top | +4.86 pts | +2.51 pts | +3.59 pts | +1.19 pts |
+| 4 top | +4.19 pts | +2.32 pts | +3.26 pts | +1.26 pts |
+| 5 top | +3.52 pts | +2.09 pts | +2.88 pts | +1.19 pts |
+| 6 top | +2.85 pts | +1.83 pts | +2.44 pts | +1.17 pts |
+| 7 top | +2.18 pts | +1.50 pts | +1.94 pts | +1.24 pts |
+| 8 top | +1.50 pts | +1.11 pts | +1.39 pts | +1.24 pts |
+| 9 top | +0.85 pts | +0.69 pts | +0.81 pts | +1.33 pts |
+| 9 bot | +0.90 pts | +0.75 pts | +0.87 pts | +2.02 pts |
 
 - **best single wrong call ahead** is what ONE challenge saved for later could win with perfect foresight — an upper bound on the value of holding it. A real team doesn't know which call will be the big one, and a failed challenge is lost; Week 11's backward induction computes the real value, V(s, r) − V(s, r − 1), below this ceiling.
 - Compare it with **a wrong call now**: early in the game the best call still to come is worth several times a typical call now — the case for holding. Late, the two converge, and the last innings are where a challenge in hand is worth spending.
@@ -89,9 +89,9 @@ By the umpire's accuracy (thirds of umpires, adjusted for how hard their pitches
 
 | start of | most accurate third | middle third | least accurate third |
 |---|---:|---:|---:|
-| 1 top | +2.30 pts | +2.46 pts | +2.58 pts |
-| 5 top | +1.65 pts | +1.80 pts | +1.92 pts |
-| 9 top | +0.50 pts | +0.63 pts | +0.65 pts |
+| 1 top | +2.78 pts | +2.82 pts | +3.10 pts |
+| 5 top | +1.98 pts | +2.02 pts | +2.29 pts |
+| 9 top | +0.60 pts | +0.65 pts | +0.83 pts |
 
 (best single wrong call ahead) A less accurate umpire supplies more chances later, so a challenge in hand is worth more with him behind the plate.
 
@@ -99,58 +99,58 @@ By the umpire's accuracy (thirds of umpires, adjusted for how hard their pitches
 
 | team | games | challenges | overturned | success | wins added | runs added | left on the table | lost when out | umpire net |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| CIN | 163 | 278 | 170 | 61% | +2.50 | +24.3 | 7.98 | 0.12 | -1.15 |
-| CWS | 163 | 347 | 176 | 51% | +2.32 | +23.3 | 6.16 | 0.83 | +0.28 |
-| LAA | 163 | 261 | 148 | 57% | +2.27 | +21.2 | 7.16 | 0.30 | -0.70 |
-| MIA | 162 | 295 | 174 | 59% | +2.27 | +21.7 | 6.79 | 0.35 | -0.20 |
-| AZ | 163 | 245 | 151 | 62% | +2.23 | +18.2 | 6.94 | 0.20 | -0.31 |
-| MIL | 163 | 289 | 155 | 54% | +2.23 | +21.0 | 7.81 | 0.50 | -0.13 |
-| MIN | 163 | 326 | 170 | 52% | +2.18 | +22.7 | 6.11 | 0.75 | -0.02 |
-| TEX | 163 | 216 | 136 | 63% | +2.17 | +22.6 | 6.78 | 0.12 | -0.71 |
-| ATH | 162 | 264 | 162 | 61% | +2.11 | +23.6 | 7.04 | 0.26 | -0.30 |
-| NYM | 162 | 293 | 156 | 53% | +2.11 | +21.4 | 6.97 | 0.47 | +0.03 |
-| SD | 163 | 254 | 134 | 53% | +2.10 | +18.9 | 6.99 | 0.23 | +0.12 |
-| WSH | 162 | 270 | 142 | 53% | +2.10 | +20.3 | 6.86 | 0.80 | -0.59 |
-| COL | 163 | 285 | 158 | 55% | +1.98 | +20.3 | 5.29 | 0.58 | -0.14 |
-| CHC | 164 | 253 | 154 | 61% | +1.95 | +19.9 | 6.13 | 0.39 | +1.38 |
-| TOR | 162 | 276 | 151 | 55% | +1.93 | +20.3 | 5.96 | 0.73 | +1.69 |
-| SF | 162 | 259 | 142 | 55% | +1.90 | +20.8 | 6.57 | 0.40 | +0.42 |
-| HOU | 163 | 307 | 170 | 55% | +1.88 | +20.6 | 5.74 | 0.82 | +0.74 |
-| KC | 163 | 252 | 152 | 60% | +1.85 | +19.1 | 6.54 | 0.28 | +0.29 |
-| NYY | 163 | 299 | 173 | 58% | +1.80 | +21.7 | 5.66 | 0.32 | +2.26 |
-| ATL | 164 | 221 | 126 | 57% | +1.76 | +17.1 | 6.17 | 0.39 | -0.11 |
-| DET | 163 | 260 | 155 | 60% | +1.68 | +20.0 | 6.74 | 0.28 | +0.43 |
-| BAL | 161 | 243 | 118 | 49% | +1.68 | +16.0 | 7.46 | 0.47 | -0.41 |
-| BOS | 164 | 229 | 130 | 57% | +1.63 | +18.4 | 7.65 | 0.43 | -1.13 |
-| CLE | 163 | 248 | 129 | 52% | +1.62 | +15.4 | 7.35 | 0.49 | +0.24 |
-| PHI | 163 | 252 | 158 | 63% | +1.61 | +18.5 | 6.43 | 0.49 | -0.19 |
-| STL | 162 | 202 | 107 | 53% | +1.61 | +15.4 | 7.27 | 0.12 | -0.03 |
-| PIT | 162 | 270 | 133 | 49% | +1.55 | +16.8 | 7.29 | 0.38 | +0.17 |
-| TB | 163 | 262 | 152 | 58% | +1.54 | +17.1 | 6.46 | 0.19 | -0.23 |
-| SEA | 162 | 226 | 121 | 54% | +1.52 | +15.1 | 7.88 | 0.25 | -2.14 |
-| LAD | 163 | 215 | 121 | 56% | +1.45 | +15.9 | 6.38 | 0.33 | +0.44 |
+| CIN | 163 | 370 | 228 | 62% | +4.55 | +47.6 | 7.23 | 0.55 | -1.20 |
+| MIN | 163 | 448 | 245 | 55% | +4.43 | +47.7 | 5.42 | 1.09 | +0.06 |
+| ATH | 162 | 374 | 225 | 60% | +4.30 | +48.4 | 6.38 | 0.62 | -0.30 |
+| CWS | 163 | 441 | 218 | 49% | +4.20 | +40.4 | 5.37 | 1.34 | +0.27 |
+| MIA | 162 | 401 | 227 | 57% | +4.13 | +40.2 | 6.10 | 0.67 | -0.06 |
+| LAA | 163 | 369 | 198 | 54% | +4.11 | +42.1 | 6.58 | 0.54 | -0.59 |
+| COL | 163 | 384 | 209 | 54% | +3.81 | +41.9 | 4.80 | 0.88 | -0.24 |
+| BOS | 164 | 336 | 184 | 55% | +3.60 | +38.8 | 7.13 | 0.62 | -1.01 |
+| MIL | 163 | 381 | 201 | 53% | +3.58 | +34.8 | 7.01 | 1.01 | -0.17 |
+| NYM | 162 | 384 | 197 | 51% | +3.56 | +35.6 | 6.15 | 1.04 | +0.00 |
+| SD | 163 | 340 | 170 | 50% | +3.56 | +33.1 | 6.55 | 0.43 | +0.06 |
+| TEX | 163 | 293 | 170 | 58% | +3.41 | +35.6 | 6.33 | 0.34 | -0.73 |
+| BAL | 161 | 326 | 162 | 50% | +3.41 | +31.4 | 6.90 | 0.72 | -0.46 |
+| NYY | 163 | 397 | 217 | 55% | +3.34 | +38.8 | 4.81 | 0.80 | +2.26 |
+| SEA | 162 | 335 | 170 | 51% | +3.34 | +34.6 | 6.80 | 1.01 | -2.08 |
+| CHC | 164 | 338 | 199 | 59% | +3.31 | +38.2 | 5.65 | 0.55 | +1.29 |
+| AZ | 163 | 307 | 184 | 60% | +3.28 | +31.5 | 6.57 | 0.22 | -0.23 |
+| CLE | 163 | 338 | 165 | 49% | +3.12 | +27.8 | 6.11 | 1.50 | +0.15 |
+| STL | 162 | 285 | 141 | 49% | +3.11 | +28.7 | 6.48 | 0.70 | -0.10 |
+| TOR | 162 | 340 | 188 | 55% | +3.08 | +34.6 | 5.60 | 0.85 | +1.63 |
+| WSH | 162 | 338 | 171 | 51% | +3.03 | +30.7 | 6.29 | 1.08 | -0.53 |
+| LAD | 163 | 296 | 160 | 54% | +2.98 | +30.2 | 6.01 | 0.46 | +0.38 |
+| PHI | 163 | 333 | 191 | 57% | +2.98 | +32.8 | 5.95 | 0.67 | -0.25 |
+| HOU | 163 | 385 | 201 | 52% | +2.98 | +32.0 | 4.97 | 1.31 | +0.72 |
+| ATL | 164 | 303 | 161 | 53% | +2.97 | +31.3 | 5.43 | 0.78 | +0.06 |
+| DET | 163 | 331 | 190 | 57% | +2.96 | +33.0 | 6.31 | 0.53 | +0.45 |
+| KC | 163 | 332 | 184 | 55% | +2.96 | +30.7 | 5.82 | 0.73 | +0.29 |
+| SF | 162 | 334 | 171 | 51% | +2.75 | +30.8 | 5.94 | 0.74 | +0.42 |
+| PIT | 162 | 355 | 167 | 47% | +2.70 | +28.5 | 6.70 | 0.68 | +0.13 |
+| TB | 163 | 341 | 180 | 53% | +2.63 | +27.7 | 5.51 | 0.87 | -0.21 |
 
 - **wins added**: win probability gained by the team's overturned challenges.
 - **left on the table**: expected wins in wrong calls against the team that it could have challenged (it had one left) and didn't.
 - **lost when out**: expected wins in wrong calls against it after it had run out.
 - **umpire net**: wrong calls that stood in its favour minus those that stood against it.
 
-Sensitivity: with p(s) as it stands on every pitch — its curve held flat beyond the range of challenged pitches — the league totals would be 54,485 expected wrong calls (vs 23,428), 731.5 wins moved (vs 272.3) and 7.9% won back (vs 21.1%). The gap is the flat tail summed over hundreds of thousands of easy calls; the challenged pitches themselves are unaffected.
+Sensitivity: with p(s) as it stands on every pitch — its curve held flat beyond the range of challenged pitches — the league totals would be 55,675 expected wrong calls (vs 24,083), 774.5 wins moved (vs 308.4) and 13.2% won back (vs 33.1%). The gap is the flat tail summed over hundreds of thousands of easy calls; the challenged pitches themselves are unaffected.
 
 ## 6. Series level
 
-784 series. A challenge's win probability only changes a series result when its game decided the series (flip that game and the team wins, splits or loses the series instead). Summed over those deciding games, challenges changed the expected series results by **16.7 series** across the season; 102 series moved by 5+ points.
+784 series. A challenge's win probability only changes a series result when its game decided the series (flip that game and the team wins, splits or loses the series instead). Summed over those deciding games, challenges changed the expected series results by **29.3 series** across the season; 212 series moved by 5+ points.
 
 | series | team | games | net challenge value | value in deciding games |
 |---:|---|---:|---:|---:|
-| 356 | LAA | 4 | +17.0 pts | +17.0 pts |
-| 513 | MIA | 3 | +21.2 pts | +16.8 pts |
-| 598 | SF | 4 | +12.5 pts | +15.6 pts |
-| 386 | SD | 3 | +15.4 pts | +15.4 pts |
-| 638 | HOU | 3 | +14.5 pts | +15.0 pts |
-| 177 | CIN | 3 | +15.2 pts | +14.7 pts |
-| 580 | SD | 3 | +14.1 pts | +14.5 pts |
-| 784 | WSH | 3 | +13.2 pts | +14.4 pts |
+| 557 | CIN | 3 | +44.8 pts | +45.4 pts |
+| 98 | SEA | 4 | +28.4 pts | +28.4 pts |
+| 161 | CIN | 3 | +30.5 pts | +27.6 pts |
+| 235 | COL | 3 | +27.5 pts | +23.2 pts |
+| 513 | MIA | 3 | +28.0 pts | +21.9 pts |
+| 293 | AZ | 3 | +22.3 pts | +21.1 pts |
+| 200 | CLE | 4 | +20.5 pts | +20.5 pts |
+| 366 | LAA | 4 | +19.9 pts | +20.1 pts |
 
 Season level and series level are the same numbers added up differently: Week 11's policy will be scored the same way (wins per season), and Spring's simulator replays whole seasons under it.
 
@@ -158,46 +158,46 @@ Season level and series level are the same numbers added up differently: Week 11
 
 | role | challenges | overturned [95%] | mean p(s) of the pitches chosen | above expected (per 100) | win prob. per challenge |
 |---|---:|---|---:|---:|---:|
-| batter | 3,460 | 57.8% [56.2%, 59.4%] | 57.8% | -0.0 | +0.86 pts |
-| catcher | 4,278 | 55.3% [53.8%, 56.8%] | 55.4% | -0.1 | +0.63 pts |
-| pitcher | 132 | 39.4% [31.5%, 47.9%] | 39.6% | -0.2 | +0.43 pts |
+| batter | 4,757 | 48.9% [47.5%, 50.3%] | 49.0% | -0.1 | +0.92 pts |
+| catcher | 5,600 | 58.6% [57.3%, 59.8%] | 58.4% | +0.2 | +1.02 pts |
+| pitcher | 178 | 39.3% [32.4%, 46.7%] | 39.2% | +0.1 | +0.73 pts |
 
-- batting side — clearly wrong calls challenged (p(s) ≥ 90%): 17.0% of 11,299
+- batting side — clearly wrong calls challenged (p(s) ≥ 90%): 20.0% of 11,157
 
-- fielding side — clearly wrong calls challenged (p(s) ≥ 90%): 25.7% of 8,988
+- fielding side — clearly wrong calls challenged (p(s) ≥ 90%): 33.6% of 9,522
 
 **Two different questions:**
 
-1. *Given the pitch, does WHO challenged change what ABS rules?* Permutation test on overturned − p(s), shuffling challengers within role: **p = 0.397**; size of real differences ±0.4 points (split-half reliability -0.07 over 213 clusters). ABS sees only the ball, so this should be no or tiny — and then **player accuracy does not belong in p(s)**: the location model already says what the challenger's identity could.
-2. *Do challengers differ in WHICH pitches they challenge?* Permutation test on the p(s) of the pitches they chose: **p = 0.002**; size ±5.4 points of p(s) (split-half reliability 0.16 over 213 clusters). This is the real meaning of "a more accurate challenger": better judgment about which calls are wrong. It belongs in the **decision**, not in p(s) — see WEEK10.md, "Where each idea goes".
+1. *Given the pitch, does WHO challenged change what ABS rules?* Permutation test on overturned − p(s), shuffling challengers within role: **p = 0.170**; size of real differences ±0.6 points (split-half reliability 0.02 over 257 clusters). ABS sees only the ball, so this should be no or tiny — and then **player accuracy does not belong in p(s)**: the location model already says what the challenger's identity could.
+2. *Do challengers differ in WHICH pitches they challenge?* Permutation test on the p(s) of the pitches they chose: **p = 0.006**; size ±4.4 points of p(s) (split-half reliability 0.21 over 257 clusters). This is the real meaning of "a more accurate challenger": better judgment about which calls are wrong. It belongs in the **decision**, not in p(s) — see WEEK10.md, "Where each idea goes".
 
 Challengers with 10+ challenges, best and worst by shrunk success rate (pulled toward their role's rate in proportion to how few challenges they have):
 
 | challenger | role | challenges | overturned | shrunk rate | mean p(s) chosen | above expected |
 |---|---|---:|---:|---:|---:|---:|
-| J.T. Realmuto | catcher | 66 | 53 | 65.7% | 78.6% | +1.1 |
-| Miguel Amaya | catcher | 59 | 41 | 60.8% | 70.7% | -0.7 |
-| Salvador Perez | catcher | 51 | 36 | 60.7% | 70.5% | +0.1 |
-| Tyler Stephenson | catcher | 111 | 72 | 60.5% | 65.2% | -0.4 |
-| Hunter Goodman | catcher | 81 | 53 | 60.0% | 65.7% | -0.2 |
-| Edgar Quero | catcher | 72 | 31 | 49.9% | 42.7% | +0.3 |
-| Francisco Alvarez | catcher | 70 | 29 | 49.3% | 41.8% | -0.3 |
-| Carlos Narváez | catcher | 60 | 24 | 49.3% | 41.3% | -0.8 |
-| Brandon Valenzuela | catcher | 54 | 21 | 49.2% | 38.5% | +0.2 |
-| Freddy Fermin | catcher | 53 | 19 | 48.2% | 37.3% | -0.8 |
+| J.T. Realmuto | catcher | 86 | 70 | 68.4% | 79.8% | +1.4 |
+| Tyler Stephenson | catcher | 136 | 93 | 63.9% | 68.9% | -0.8 |
+| Hunter Goodman | catcher | 113 | 77 | 63.3% | 67.8% | +0.4 |
+| Carson Kelly | catcher | 93 | 64 | 63.2% | 68.0% | +0.8 |
+| Salvador Perez | catcher | 65 | 46 | 63.0% | 70.0% | +0.5 |
+| Spencer Horwitz | batter | 19 | 5 | 48.0% | 30.5% | -0.8 |
+| José Fermín | batter | 13 | 2 | 48.0% | 15.4% | -0.0 |
+| Willi Castro | batter | 23 | 6 | 47.9% | 26.1% | -0.0 |
+| Josh Naylor | batter | 26 | 7 | 47.8% | 27.0% | -0.0 |
+| Ceddanne Rafaela | batter | 24 | 6 | 47.8% | 25.1% | -0.0 |
 
 ## 8. Umpires — who misses more, and what it changes
 
 - 1,430 called pitches in 12 games have no home-plate umpire on record; they are left out of this section.
-- Do umpires differ in how often ABS would reverse them, for pitches of the same difficulty? Permutation test (whole games shuffled between umpires): **p = 0.001**; size ±0.54 wrong calls per 100 called pitches; reliability across odd and even games 0.71 over 90 clusters.
-- Given the pitch, does the umpire change the chance a challenge succeeds? **p = 0.560**; size ±0.0 points.
+- Do umpires differ in how often ABS would reverse them, for pitches of the same difficulty? Permutation test (whole games shuffled between umpires): **p = 0.001**; size ±0.57 wrong calls per 100 called pitches; reliability across odd and even games 0.73 over 90 clusters.
+- Given the pitch, does the umpire change the chance a challenge succeeds? **p = 0.790**; size ±0.0 points.
   ABS doesn't know who the umpire was, and the data agree: umpire accuracy doesn't belong in p(s).
 
 | umpires | count | wrong calls a game | vs an average umpire (per 100 calls) | win prob. at stake a game | of it challengeable |
 |---|---:|---:|---:|---:|---:|
-| most accurate third | 30 | 8.52 | -0.73 | +10.01 pts | +9.60 pts |
-| middle third | 29 | 9.65 | +0.01 | +11.14 pts | +10.65 pts |
-| least accurate third | 30 | 10.72 | +0.74 | +12.32 pts | +11.74 pts |
+| most accurate third | 30 | 8.71 | -0.76 | +11.38 pts | +10.50 pts |
+| middle third | 29 | 9.90 | -0.01 | +12.39 pts | +11.51 pts |
+| least accurate third | 30 | 11.09 | +0.78 | +14.19 pts | +13.10 pts |
 
 Umpire accuracy changes **how many chances** a team gets, not whether a challenge succeeds. That is exactly where it enters the decision: the value of holding a challenge depends on how many wrong calls are still likely to come (section 4).
 

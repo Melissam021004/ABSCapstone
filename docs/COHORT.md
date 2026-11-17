@@ -1,8 +1,8 @@
 # Analytic Cohort — 2026
 
-Frozen 2026-10-08T13:54 by `scripts/13_define_cohort.py`. Fingerprint `419af01ad9eee03f`.
+Frozen 2026-11-17T16:20 by `scripts/13_define_cohort.py`. Fingerprint `419af01ad9eee03f`.
 
-**370,909 rows** from 720,209 pitches (51.5% retained), 7,897 of them challenged.
+**370,909 rows** from 720,209 pitches (51.5% retained), 10,535 of them challenged.
 
 Changing anything here means re-running Weeks 7 onward. If you do change it, note the date and the reason — the fingerprint above is how you prove which cohort produced which result.
 
@@ -23,9 +23,9 @@ Split on **time, not at random**. The model predicts future challenges from past
 
 | Window | Dates | Pitches | Challenges |
 |---|---|---:|---:|
-| train | 2026-03-01 → 2026-07-31 | 252,016 | 5,219 |
-| validate | 2026-08-01 → 2026-08-31 | 63,649 | 1,435 |
-| test | 2026-09-01 → 2026-12-31 | 55,244 | 1,243 |
+| train | 2026-03-01 → 2026-07-31 | 252,016 | 6,955 |
+| validate | 2026-08-01 → 2026-08-31 | 63,649 | 1,920 |
+| test | 2026-09-01 → 2026-12-31 | 55,244 | 1,660 |
 
 Tune on **validate** only. The **test** window is read exactly once, at the end of Week 8.
 
@@ -61,14 +61,14 @@ Tune on **validate** only. The **test** window is read exactly once, at the end 
 | `hc_x` | 100.0% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `hc_y` | 100.0% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `hyper_speed` | 99.99% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
-| `challenger_role` | 97.88% | structural | Only exists once a challenge happened. |
-| `challenger_id` | 97.88% | structural | Same. |
-| `challenger_name` | 97.88% | structural | Same. |
-| `challenging_side` | 97.88% | structural | Same. |
-| `is_overturned` | 97.87% | structural | Null on unchallenged pitches by design. |
-| `challenge_call_code` | 97.87% | structural | Same. |
-| `challenge_description` | 97.87% | structural | Same. |
 | `hit_location` | 97.34% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
+| `is_overturned` | 97.16% | structural | Null on unchallenged pitches by design. |
+| `challenger_role` | 97.16% | structural | Only exists once a challenge happened. |
+| `challenger_id` | 97.16% | structural | Same. |
+| `challenge_call_code` | 97.16% | structural | Same. |
+| `challenge_description` | 97.16% | structural | Same. |
+| `challenger_name` | 97.16% | structural | Same. |
+| `challenging_side` | 97.16% | structural | Same. |
 | `estimated_woba_using_speedangle` | 93.2% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `des` | 93.19% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `woba_denom` | 93.12% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
@@ -79,11 +79,11 @@ Tune on **validate** only. The **test** window is read exactly once, at the end 
 | `on_3b` | 90.95% | structural | Null means the base is empty. |
 | `on_2b` | 81.72% | structural | Null means the base is empty. |
 | `on_1b` | 69.07% | structural | Null means the base is empty. |
-| `catcher_rv_tot` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
-| `catcher_rv_16` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
-| `catcher_rv_11` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
-| `catcher_rv_12` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `catcher_rv_13` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
+| `catcher_rv_12` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
+| `catcher_rv_11` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
+| `catcher_rv_16` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
+| `catcher_rv_tot` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `catcher_rv_14` | 18.38% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `pitcher_days_until_next_game` | 7.12% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `pitcher_days_since_prev_game` | 5.62% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
@@ -92,11 +92,11 @@ Tune on **validate** only. The **test** window is read exactly once, at the end 
 | `leverage_index` | 1.75% | impute_or_flag | Plate-appearance grain; a few pitches may not match. Add a missing-indicator rather than dropping the row. |
 | `arm_angle` | 1.15% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `hp_umpire` | 0.39% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
-| `ump_accuracy` | 0.39% | impute_or_flag | Umpires with few games. Flag, don't drop. |
-| `ump_borderline_accuracy` | 0.39% | impute_or_flag | Same. |
-| `ump_missed_strike_rate` | 0.39% | impute_or_flag | Same. |
-| `hp_umpire_id` | 0.39% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `ump_missed_ball_rate` | 0.39% | impute_or_flag | Same. |
+| `ump_missed_strike_rate` | 0.39% | impute_or_flag | Same. |
+| `ump_borderline_accuracy` | 0.39% | impute_or_flag | Same. |
+| `ump_accuracy` | 0.39% | impute_or_flag | Umpires with few games. Flag, don't drop. |
+| `hp_umpire_id` | 0.39% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `home_win_prob_added` | 0.39% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `bat_win_prob` | 0.39% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |
 | `away_win_prob` | 0.39% | DECIDE | Not yet classified — decide whether to drop, impute, or flag. |

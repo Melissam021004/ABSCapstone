@@ -82,6 +82,30 @@ def has(df, *cols):
     return all(c in df.columns for c in cols)
 
 
+BOOL = {True: True, False: False, "True": True, "False": False, 1: True, 0: False,
+        1.0: True, 0.0: False}
+
+
+def implied_original_strike(d):
+    """
+    The umpire's ORIGINAL call on each challenged pitch (True = strike), from who
+    challenged: the batting side only challenges strikes, the fielding side only
+    balls. 2026 Statcast records the FINAL call on challenged pitches (found in
+    Weeks 8–9), so the recorded call can't be used for this. NaN where unknown.
+    """
+    out = pd.Series(np.nan, index=d.index, dtype=object)
+    if has(d, "challenging_side", "batting_side"):
+        cs = d["challenging_side"].astype(str).str.lower()
+        bs = d["batting_side"].astype(str).str.lower()
+        known = cs.isin(["home", "away"]) & bs.isin(["home", "away"])
+        out[known] = (cs[known] == bs[known])
+    if has(d, "challenger_role"):
+        role = d["challenger_role"].astype(str).str.lower()
+        fill = out.isna() & role.isin(["batter", "catcher", "pitcher"])
+        out[fill] = role[fill].eq("batter")
+    return out
+
+
 # --------------------------------------------------------------------------
 def run_checks(df, raw_challenges):
     n = len(df)
@@ -174,11 +198,17 @@ def run_checks(df, raw_challenges):
         if n_ch:
             if has(df, "is_called_pitch"):
                 bad = ch[~ch["is_called_pitch"].astype(bool)]
-                check("CHALLENGED_ARE_CALLED", CRITICAL,
+                share = len(bad) / max(n_ch, 1)
+                # Script 08 moves a challenge that lands on a swing to the called
+                # pitch at the Stats API's count, so what's left here is a handful
+                # the two sources genuinely disagree on. They drop out at the
+                # cohort's called-pitches rule; only a real share means a join bug.
+                check("CHALLENGED_ARE_CALLED", CRITICAL if share > 0.005 else WARN,
                       "Challenged pitches are called pitches", len(bad) == 0,
-                      f"{len(bad):,} challenges on swung-at pitches",
-                      "You can only challenge a taken pitch. These are join errors — "
-                      "most likely pitch_number is off by one.", bad)
+                      f"{len(bad):,} of {n_ch:,} challenges on swung-at pitches ({share:.2%})",
+                      "You can only challenge a taken pitch. Many of these mean a join error "
+                      "(pitch_number off by one); a few are pitches Statcast and the Stats "
+                      "API record differently, and the cohort leaves them out.", bad)
 
             # These two are about DATA GAPS rather than logic errors. The Stats
             # API genuinely omits the challenger on a small number of reviews,
@@ -230,17 +260,31 @@ def run_checks(df, raw_challenges):
                       "inning. Over budget means the inventory never decremented.",
                       bad)
 
-            # the zone implementation's own test
-            if has(df, "would_be_overturned", "is_overturned"):
+            # the zone implementation's own test — against the ORIGINAL call
+            # (from who challenged), because the recorded call on a challenged
+            # pitch is the final one in 2026 Statcast: checked against it, every
+            # overturned challenge looks like a miss and agreement collapses to
+            # the share upheld.
+            if has(df, "abs_strike", "is_overturned"):
                 sub = ch[ch["is_overturned"].notna()]
+                orig = implied_original_strike(sub)
+                sub, orig = sub[orig.notna()], orig[orig.notna()].astype(bool)
                 if len(sub):
-                    agree = float((sub["would_be_overturned"].astype(bool) ==
-                                   sub["is_overturned"].astype(bool)).mean())
-                    mism = sub[sub["would_be_overturned"].astype(bool) !=
-                               sub["is_overturned"].astype(bool)]
+                    ov = sub["is_overturned"].map(BOOL).fillna(False).astype(bool)
+                    pred = sub["abs_strike"].map(BOOL).fillna(False).astype(bool) != orig
+                    agree = float((pred == ov).mean())
+                    mism = sub[pred != ov]
+                    rec = ""
+                    if has(sub, "called_strike") and ov.any():
+                        r = float((sub["called_strike"].map(BOOL).fillna(False).astype(bool)[ov]
+                                   == orig[ov]).mean())
+                        rec = (f"; the recorded call is still the original on {r:.0%} of "
+                               f"overturned challenges")
                     check("ZONE_PREDICTS_OUTCOME", CRITICAL,
                           "ABS zone reproduces actual challenge outcomes",
-                          agree >= 0.85, f"{agree:.1%} agreement (need >= 85%)",
+                          agree >= 0.85,
+                          f"{agree:.1%} agreement (need >= 85%; checked against the "
+                          f"original call{rec})",
                           "Your reconstructed ABS zone disagrees with what ABS "
                           "actually ruled. The zone constants, the ball-radius rule "
                           "or the batter heights are wrong — and every distance "

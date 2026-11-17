@@ -1,8 +1,8 @@
 # Data Dictionary — `challenge_inventory_2026`
 
-Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand — edit the REGISTRY in that script and re-run.
+Generated 2026-11-17 by `scripts/09_data_dictionary.py`. Do not edit by hand — edit the REGISTRY in that script and re-run.
 
-**720,209 rows × 166 columns.** One row per pitch, keyed on `game_pk` + `at_bat_number` + `pitch_number`.
+**720,209 rows × 167 columns.** One row per pitch, keyed on `game_pk` + `at_bat_number` + `pitch_number`.
 
 ## Modelling roles
 
@@ -12,7 +12,7 @@ Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand —
 | **LEAKAGE RISK** | 5 | Known only after the challenge resolved. Using these as features inflates performance and invalidates the model. |
 | feature | 50 | Safe model input — known at the moment of the decision. |
 | identifier | 5 | Keys and names. For joining and inspection. |
-| metadata | 16 | Provenance, flags and bookkeeping. |
+| metadata | 17 | Provenance, flags and bookkeeping. |
 | UNDOCUMENTED | 87 | Present in the table but not yet defined here. |
 
 **Targets:** `is_overturned`, `was_challenged`, `would_be_overturned`
@@ -30,20 +30,20 @@ Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand —
 
 | Column | Non-null % | Source |
 |---|---:|---|
-| `challenger_role` | 1.1% | MLB Stats API (script 02) |
-| `challenger_id` | 1.1% | MLB Stats API (script 02) |
-| `challenger_name` | 1.1% | MLB Stats API (script 02) |
-| `challenging_side` | 1.1% | MLB Stats API (script 02) |
-| `challenge_call_code` | 1.1% | MLB Stats API (script 02) |
-| `challenge_description` | 1.1% | MLB Stats API (script 02) |
-| `is_overturned` | 1.1% | MLB Stats API (script 02) |
+| `challenge_description` | 1.5% | MLB Stats API (script 02) |
+| `is_overturned` | 1.5% | MLB Stats API (script 02) |
+| `challenging_side` | 1.5% | MLB Stats API (script 02) |
+| `challenger_name` | 1.5% | MLB Stats API (script 02) |
+| `challenger_id` | 1.5% | MLB Stats API (script 02) |
+| `challenger_role` | 1.5% | MLB Stats API (script 02) |
+| `challenge_call_code` | 1.5% | MLB Stats API (script 02) |
 | `on_3b` | 9.7% | Statcast (script 01) |
 | `miss_distance` | 10.7% | Statcast (script 01) |
 | `estimated_ba_using_speedangle` | 17.0% | Statcast (script 01) |
 | `estimated_slg_using_speedangle` | 17.0% | Statcast (script 01) |
 | `launch_speed_angle` | 17.3% | Statcast (script 01) |
-| `hc_x` | 17.4% | Statcast (script 01) |
 | `hc_y` | 17.4% | Statcast (script 01) |
+| `hc_x` | 17.4% | Statcast (script 01) |
 | `bb_type` | 17.4% | Statcast (script 01) |
 | `on_2b` | 19.2% | Statcast (script 01) |
 | `hit_location` | 22.3% | Statcast (script 01) |
@@ -59,19 +59,19 @@ Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand —
 | `hit_distance_sc` | 33.1% | Statcast (script 01) |
 | `launch_angle` | 33.1% | Statcast (script 01) |
 | `hyper_speed` | 33.3% | Statcast (script 01) |
-| `intercept_ball_minus_batter_pos_y_inches` | 46.1% | Statcast (script 01) |
 | `intercept_ball_minus_batter_pos_x_inches` | 46.1% | Statcast (script 01) |
+| `intercept_ball_minus_batter_pos_y_inches` | 46.1% | Statcast (script 01) |
 | `attack_direction` | 46.1% | Statcast (script 01) |
+| `bat_speed` | 46.1% | Statcast (script 01) |
 | `swing_length` | 46.1% | Statcast (script 01) |
 | `attack_angle` | 46.1% | Statcast (script 01) |
-| `bat_speed` | 46.1% | Statcast (script 01) |
 | `swing_path_tilt` | 46.1% | Statcast (script 01) |
-| `catcher_rv_12` | 81.6% | Savant catcher framing (script 04) |
-| `catcher_rv_13` | 81.6% | Savant catcher framing (script 04) |
-| `catcher_rv_11` | 81.6% | Savant catcher framing (script 04) |
-| `catcher_rv_14` | 81.6% | Savant catcher framing (script 04) |
-| `catcher_rv_tot` | 81.6% | Savant catcher framing (script 04) |
 | `catcher_rv_16` | 81.6% | Savant catcher framing (script 04) |
+| `catcher_rv_12` | 81.6% | Savant catcher framing (script 04) |
+| `catcher_rv_11` | 81.6% | Savant catcher framing (script 04) |
+| `catcher_rv_tot` | 81.6% | Savant catcher framing (script 04) |
+| `catcher_rv_13` | 81.6% | Savant catcher framing (script 04) |
+| `catcher_rv_14` | 81.6% | Savant catcher framing (script 04) |
 | `pitcher_days_until_next_game` | 92.7% | Statcast (script 01) |
 | `pitcher_days_since_prev_game` | 94.3% | Statcast (script 01) |
 
@@ -201,20 +201,12 @@ Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand —
 | `woba_denom` | Int64 | UNDOCUMENTED | 25% | 0.0 … 1.0 | Not yet documented — a Statcast column this project does not use.<br>⚠ Look it up in Savant's CSV documentation and add it to REGISTRY in scripts/09_data_dictionary.py if you start using it. |
 | `woba_value` | Float64 | UNDOCUMENTED | 26% | 0.0 … 2.0 | Not yet documented — a Statcast column this project does not use.<br>⚠ Look it up in Savant's CSV documentation and add it to REGISTRY in scripts/09_data_dictionary.py if you start using it. |
 
-## MLB Stats API (script 02)
+## MLB Stats API people (script 07)
 
 | Column | Type | Role | Non-null | Range / example | Definition |
 |---|---|---|---:|---|---|
-| `is_overturned` | object | **target** | 1% | True, False | The challenge succeeded and the call was reversed.<br>⚠ The target for the OVERTURN model p(s). Null on unchallenged pitches by construction, not by data loss. |
-| `was_challenged` | bool | **target** | 100% | True 1.1% | A challenge was actually made on this pitch.<br>⚠ The target for the BEHAVIOUR model (did they challenge?). Never a feature. |
-| `challenge_call_code` | str | **LEAKAGE RISK** | 1% | C, B, F | Original call code on a challenged pitch. |
-| `challenge_description` | str | **LEAKAGE RISK** | 1% | Called Strike, Ball, Foul | Free-text description of the review. |
-| `challenger_id` | float64 | **LEAKAGE RISK** | 1% | 457705.0 … 823550.0 | Challenger's MLBAM id.<br>⚠ See challenger_role. |
-| `challenger_role` | str | **LEAKAGE RISK** | 1% | catcher, batter, pitcher | batter, catcher or pitcher.<br>⚠ Known only once a challenge happened. Fine for splitting results by role; not an input to a model predicting whether a challenge occurs. |
-| `challenging_side` | str | **LEAKAGE RISK** | 1% | home, away | 'home' or 'away'.<br>⚠ See challenger_role. |
-| `hp_umpire` | str | feature | 100% | Austin Jones, Jen Pawol, Alfonso Márquez | Home-plate umpire name.<br>⚠ From the schedule endpoint with hydrate=officials. |
-| `challenger_name` | str | identifier | 1% | Keibert Ruiz, Francisco Alvarez, Marcus Semien | Challenger's name. |
-| `hp_umpire_id` | float64 | identifier | 100% | 427013.0 … 691042.0 | Home-plate umpire id. |
+| `batter_height_ft` | float64 | feature | 100% | 5.4167 … 6.5833 | Listed batter height in feet.<br>⚠ Self-reported and rounded to the inch; a 1-inch error moves the zone edge about half an inch. |
+| `pitcher_pos` | str | metadata | 100% | P, DH, 3B | Pitcher's listed primary position.<br>⚠ Used only to detect position players pitching. |
 
 ## Derived (script 08)
 
@@ -232,21 +224,15 @@ Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand —
 | `zone_dist_ft` | float64 | feature | 100% | -0.8292 … 7.9832 | Signed distance from the BALL'S SURFACE to the ABS zone, ft. Negative = overlapping the zone = ABS strike.<br>⚠ The ball's 1.45-inch radius is already subtracted, because any part of the ball touching the zone is a strike. |
 | `zone_dist_in` | float64 | feature | 100% | -9.95 … 95.7983 | Same, in inches. The headline feature.<br>⚠ Highly non-linear near zero — give it a spline or let a tree split it. |
 | `abs_zone_source` | str | metadata | 100% | batter_height, statcast_sz | 'batter_height' (correct) or 'statcast_sz' (fallback).<br>⚠ Any row with 'statcast_sz' has an approximated zone. Report the share in your limitations. |
+| `challenge_rekeyed` | bool | metadata | 100% | True 0.0% | The challenge was moved to the called pitch at the Stats API's count in the same at-bat, because the two sources numbered that at-bat's pitches differently.<br>⚠ Script 08's count check (November 2026). A handful a season; never a feature. |
 | `is_called_pitch` | bool | metadata | 100% | True 51.8% | Taken pitch — called strike or ball. |
-| `is_challenge_opportunity` | bool | metadata | 100% | True 49.8% | Either side had an opportunity.<br>⚠ Savant reports ~50% of pitches. |
-| `is_challenge_opportunity_batting` | bool | metadata | 100% | True 15.5% | The batting side could have challenged: called strike, a challenge in hand, no position player pitching.<br>⚠ The model's denominator for batter behaviour. |
-| `is_challenge_opportunity_fielding` | bool | metadata | 100% | True 34.3% | Same for the fielding side on a called ball. |
-| `is_reasonable_pitch` | boolean | metadata | 100% | True 5.0% | Opportunity that was either genuinely wrong or within 3 inches of the edge.<br>⚠ A simplified stand-in for Savant's 'reasonable pitch' (~5%); theirs also uses RE288 run value. |
+| `is_challenge_opportunity` | bool | metadata | 100% | True 47.9% | Either side had an opportunity.<br>⚠ Savant reports ~50% of pitches. |
+| `is_challenge_opportunity_batting` | bool | metadata | 100% | True 15.0% | The batting side could have challenged: called strike, a challenge in hand, no position player pitching.<br>⚠ The model's denominator for batter behaviour. |
+| `is_challenge_opportunity_fielding` | bool | metadata | 100% | True 33.0% | Same for the fielding side on a called ball. |
+| `is_reasonable_pitch` | boolean | metadata | 100% | True 4.8% | Opportunity that was either genuinely wrong or within 3 inches of the edge.<br>⚠ A simplified stand-in for Savant's 'reasonable pitch' (~5%); theirs also uses RE288 run value. |
 | `position_player_pitching` | bool | metadata | 100% | True 0.5% | A position player is on the mound.<br>⚠ Challenges are not available in these at-bats. |
 | `sc_zone_dist_in` | float64 | metadata | 100% | -9.95 … 95.9879 | Distance using Statcast's zone instead, for robustness checks.<br>⚠ Comparison only. Do not model on it. |
 | `zone_defs_disagree` | bool | metadata | 100% | True 0.3% | True where the ABS zone and Statcast's zone disagree.<br>⚠ Where the challenges live. Good diagnostic, weak feature. |
-
-## MLB Stats API people (script 07)
-
-| Column | Type | Role | Non-null | Range / example | Definition |
-|---|---|---|---:|---|---|
-| `batter_height_ft` | float64 | feature | 100% | 5.4167 … 6.5833 | Listed batter height in feet.<br>⚠ Self-reported and rounded to the inch; a 1-inch error moves the zone edge about half an inch. |
-| `pitcher_pos` | str | metadata | 100% | P, DH, 3B | Pitcher's listed primary position.<br>⚠ Used only to detect position players pitching. |
 
 ## MLB Stats API winProbability (script 06)
 
@@ -277,3 +263,18 @@ Generated 2026-10-08 by `scripts/09_data_dictionary.py`. Do not edit by hand —
 | `ump_borderline_accuracy` | float64 | feature | 100% | 0.7188 … 0.8338 | Season accuracy metric for the home-plate umpire.<br>⚠ Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8. |
 | `ump_missed_ball_rate` | float64 | feature | 100% | 0.0183 … 0.0515 | Season accuracy metric for the home-plate umpire.<br>⚠ Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8. |
 | `ump_missed_strike_rate` | float64 | feature | 100% | 0.0142 … 0.0281 | Season accuracy metric for the home-plate umpire.<br>⚠ Derived from the same pitches you are modelling — mild circularity. Consider leave-one-game-out if it ranks high in Week 8. |
+
+## MLB Stats API (script 02)
+
+| Column | Type | Role | Non-null | Range / example | Definition |
+|---|---|---|---:|---|---|
+| `is_overturned` | object | **target** | 1% | True, False | The challenge succeeded and the call was reversed.<br>⚠ The target for the OVERTURN model p(s). Null on unchallenged pitches by construction, not by data loss. |
+| `was_challenged` | bool | **target** | 100% | True 1.5% | A challenge was actually made on this pitch.<br>⚠ The target for the BEHAVIOUR model (did they challenge?). Never a feature. |
+| `challenge_call_code` | str | **LEAKAGE RISK** | 1% | C, B | Original call code on a challenged pitch. |
+| `challenge_description` | str | **LEAKAGE RISK** | 1% | Called Strike, Ball, Luis Torrens challenged ( | Free-text description of the review. |
+| `challenger_id` | float64 | **LEAKAGE RISK** | 1% | 457705.0 … 823550.0 | Challenger's MLBAM id.<br>⚠ See challenger_role. |
+| `challenger_role` | str | **LEAKAGE RISK** | 1% | catcher, batter, pitcher | batter, catcher or pitcher.<br>⚠ Known only once a challenge happened. Fine for splitting results by role; not an input to a model predicting whether a challenge occurs. |
+| `challenging_side` | str | **LEAKAGE RISK** | 1% | home, away | 'home' or 'away'.<br>⚠ See challenger_role. |
+| `hp_umpire` | str | feature | 100% | Austin Jones, Jen Pawol, Alfonso Márquez | Home-plate umpire name.<br>⚠ From the schedule endpoint with hydrate=officials. |
+| `challenger_name` | str | identifier | 1% | Keibert Ruiz, Francisco Alvarez, Luis Torrens | Challenger's name. |
+| `hp_umpire_id` | float64 | identifier | 100% | 427013.0 … 691042.0 | Home-plate umpire id. |

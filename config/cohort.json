@@ -1,5 +1,5 @@
 {
-  "frozen_at": "2026-10-08T13:54:31",
+  "frozen_at": "2026-11-17T16:20:50",
   "source_table": "data/processed/challenge_inventory_2026.parquet",
   "rows_in": 720209,
   "rows_out": 370909,
@@ -246,60 +246,60 @@
       "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
     },
     {
-      "column": "challenger_role",
-      "n_null": 363039,
-      "pct_null": 97.88,
-      "treatment": "structural",
-      "note": "Only exists once a challenge happened."
-    },
-    {
-      "column": "challenger_id",
-      "n_null": 363039,
-      "pct_null": 97.88,
-      "treatment": "structural",
-      "note": "Same."
-    },
-    {
-      "column": "challenger_name",
-      "n_null": 363039,
-      "pct_null": 97.88,
-      "treatment": "structural",
-      "note": "Same."
-    },
-    {
-      "column": "challenging_side",
-      "n_null": 363039,
-      "pct_null": 97.88,
-      "treatment": "structural",
-      "note": "Same."
-    },
-    {
-      "column": "is_overturned",
-      "n_null": 363012,
-      "pct_null": 97.87,
-      "treatment": "structural",
-      "note": "Null on unchallenged pitches by design."
-    },
-    {
-      "column": "challenge_call_code",
-      "n_null": 363012,
-      "pct_null": 97.87,
-      "treatment": "structural",
-      "note": "Same."
-    },
-    {
-      "column": "challenge_description",
-      "n_null": 363012,
-      "pct_null": 97.87,
-      "treatment": "structural",
-      "note": "Same."
-    },
-    {
       "column": "hit_location",
       "n_null": 361057,
       "pct_null": 97.34,
       "treatment": "DECIDE",
       "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "is_overturned",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Null on unchallenged pitches by design."
+    },
+    {
+      "column": "challenger_role",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Only exists once a challenge happened."
+    },
+    {
+      "column": "challenger_id",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenge_call_code",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenge_description",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenger_name",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Same."
+    },
+    {
+      "column": "challenging_side",
+      "n_null": 360374,
+      "pct_null": 97.16,
+      "treatment": "structural",
+      "note": "Same."
     },
     {
       "column": "estimated_woba_using_speedangle",
@@ -372,21 +372,7 @@
       "note": "Null means the base is empty."
     },
     {
-      "column": "catcher_rv_tot",
-      "n_null": 68189,
-      "pct_null": 18.38,
-      "treatment": "DECIDE",
-      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
-    },
-    {
-      "column": "catcher_rv_16",
-      "n_null": 68189,
-      "pct_null": 18.38,
-      "treatment": "DECIDE",
-      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
-    },
-    {
-      "column": "catcher_rv_11",
+      "column": "catcher_rv_13",
       "n_null": 68189,
       "pct_null": 18.38,
       "treatment": "DECIDE",
@@ -400,7 +386,21 @@
       "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
     },
     {
-      "column": "catcher_rv_13",
+      "column": "catcher_rv_11",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_16",
+      "n_null": 68189,
+      "pct_null": 18.38,
+      "treatment": "DECIDE",
+      "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
+    },
+    {
+      "column": "catcher_rv_tot",
       "n_null": 68189,
       "pct_null": 18.38,
       "treatment": "DECIDE",
@@ -463,14 +463,7 @@
       "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
     },
     {
-      "column": "ump_accuracy",
-      "n_null": 1430,
-      "pct_null": 0.39,
-      "treatment": "impute_or_flag",
-      "note": "Umpires with few games. Flag, don't drop."
-    },
-    {
-      "column": "ump_borderline_accuracy",
+      "column": "ump_missed_ball_rate",
       "n_null": 1430,
       "pct_null": 0.39,
       "treatment": "impute_or_flag",
@@ -484,18 +477,25 @@
       "note": "Same."
     },
     {
+      "column": "ump_borderline_accuracy",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "impute_or_flag",
+      "note": "Same."
+    },
+    {
+      "column": "ump_accuracy",
+      "n_null": 1430,
+      "pct_null": 0.39,
+      "treatment": "impute_or_flag",
+      "note": "Umpires with few games. Flag, don't drop."
+    },
+    {
       "column": "hp_umpire_id",
       "n_null": 1430,
       "pct_null": 0.39,
       "treatment": "DECIDE",
       "note": "Not yet classified \u2014 decide whether to drop, impute, or flag."
-    },
-    {
-      "column": "ump_missed_ball_rate",
-      "n_null": 1430,
-      "pct_null": 0.39,
-      "treatment": "impute_or_flag",
-      "note": "Same."
     },
     {
       "column": "home_win_prob_added",

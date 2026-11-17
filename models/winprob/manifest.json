@@ -1,7 +1,7 @@
 {
   "name": "V(s) home win probability",
-  "date": "2026.11.04",
-  "created": "2026-11-04T09:14:27",
+  "date": "2026.11.17",
+  "created": "2026-11-17T16:21:54",
   "seasons": [
     2026
   ],
@@ -163,5 +163,5 @@
   },
   "x_extra": 0.5089783184738259,
   "pregame_home_wp_raw": 0.5295997608270029,
-  "version": "2026.11.04-824ec8be"
+  "version": "2026.11.17-824ec8be"
 }
