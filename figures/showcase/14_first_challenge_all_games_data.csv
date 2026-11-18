@@ -1,0 +1,41 @@
+panel,from_points,value
+game by game,0,503.0
+game by game,1,583.0
+game by game,2,566.0
+game by game,3,561.0
+game by game,4,483.0
+game by game,5,396.0
+game by game,6,328.0
+game by game,7,293.0
+game by game,8,224.0
+game by game,9,169.0
+game by game,10,138.0
+game by game,11,115.0
+game by game,12,95.0
+game by game,13,77.0
+game by game,14,62.0
+game by game,15,44.0
+game by game,16,33.0
+game by game,17,32.0
+game by game,18,30.0
+game by game,19,20.0
+game by game,20,20.0
+game by game,21,14.0
+game by game,22,11.0
+game by game,23,8.0
+game by game,24,5.0
+game by game,25,7.0
+game by game,26,11.0
+game by game,27,2.0
+game by game,28,3.0
+game by game,29,25.0
+points per team-game by inning (10 = extras),1,0.698
+points per team-game by inning (10 = extras),2,0.6335
+points per team-game by inning (10 = extras),3,0.6155
+points per team-game by inning (10 = extras),4,0.6152
+points per team-game by inning (10 = extras),5,0.6105
+points per team-game by inning (10 = extras),6,0.6077
+points per team-game by inning (10 = extras),7,0.6232
+points per team-game by inning (10 = extras),8,0.6141
+points per team-game by inning (10 = extras),9,0.5803
+points per team-game by inning (10 = extras),10,0.1768

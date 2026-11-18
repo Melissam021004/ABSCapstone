@@ -1,0 +1,10 @@
+what,value
+chance to win with no challenges,43.869
+chance to win with one challenge,49.697
+chance to win with two challenges,50.0
+"first-pitch strike reversed, last challenge: gain",0.657
+… loss if it stands,5.757
+… bar,0.8975
+"first-pitch strike reversed, two challenges: gain",0.662
+… loss if it stands,0.299
+… bar,0.3114

@@ -9,7 +9,8 @@
 3. `01_decision_map` — every challenge opportunity of the season; point at the circled examples.
 4. The category slides (`03_…` to `10_…`): each leaderboard, then its #1 slide with the replay, then its game story (`20_story_…`) where there is one.
 5. The quiz (`30_quiz_…`): question slide, ask the room, answer slide.
-6. `11_contrast_1` and `11_contrast_2` — same chance the call was wrong, opposite answers: the bar moves with the inning, the score and the challenges left. A good place to end.
+6. `12_first_challenge_value`, `13_first_challenge_one_game` and `14_first_challenge_all_games` (made by `scripts/25_first_challenge_value.py`; the explainer is `docs/FIRST_CHALLENGE_VALUE.md`): what a challenge is worth. The “about 6 points” is the value of holding one for the whole game, not of the first pitch, and it is why the bar starts high.
+7. `11_contrast_1` and `11_contrast_2` — same chance the call was wrong, opposite answers: the bar moves with the inning, the score and the challenges left. A good place to end.
 
 ## How to talk about the numbers (for people who don't follow baseball)
 
@@ -17,6 +18,7 @@
 - **Chance to win:** a team's probability of winning from this exact moment — inning, score, runners, outs and count (Week 10's model). A **point** is one percentage point; 100 points of win probability = one win.
 - **Leverage:** how much this moment can swing the game. 1 is a typical plate appearance; above 2 is a big moment; the most tense moments of a season reach about 10 (Tom Tango's Leverage Index).
 - **The bar:** the confidence a team needs before a challenge is worth the risk. A failed challenge is lost, so the bar is high early in a game with one challenge left, and near zero in a tied 9th inning (Week 11's MDP).
+- **What a challenge is worth:** what holding it for the rest of the game is worth, compared with having none: every wrong call it could still fix, since a challenge that succeeds is kept. At the first pitch that is Week 11 §3's number, far more than the first pitch's own call (slides 12–14).
 
 Across the season there were 343,735 challenge opportunities (a called pitch went against a team that still had a challenge).
 
