@@ -423,7 +423,11 @@ def write_notes(path, demo, cats, quiz, texts, links, n_opp, warning=None):
           "4. The category slides (`03_…` to `10_…`): each leaderboard, then its #1 slide with the replay, then "
           "its game story (`20_story_…`) where there is one.",
           "5. The quiz (`30_quiz_…`): question slide, ask the room, answer slide.",
-          "6. `11_contrast_1` and `11_contrast_2` — same chance the call was wrong, opposite answers: the bar "
+          "6. `12_first_challenge_value`, `13_first_challenge_one_game` and `14_first_challenge_all_games` "
+          "(made by `scripts/25_first_challenge_value.py`; the explainer is `docs/FIRST_CHALLENGE_VALUE.md`): "
+          "what a challenge is worth. The “about 6 points” is the value of holding one for the whole game, "
+          "not of the first pitch, and it is why the bar starts high.",
+          "7. `11_contrast_1` and `11_contrast_2` — same chance the call was wrong, opposite answers: the bar "
           "moves with the inning, the score and the challenges left. A good place to end.", "",
           "## How to talk about the numbers (for people who don't follow baseball)", "",
           "- **Chance the call was wrong, p(s):** from exactly where the ball crossed the plate. If the team "
@@ -436,7 +440,10 @@ def write_notes(path, demo, cats, quiz, texts, links, n_opp, warning=None):
           "Leverage Index).",
           "- **The bar:** the confidence a team needs before a challenge is worth the risk. A failed "
           "challenge is lost, so the bar is high early in a game with one challenge left, and near zero "
-          "in a tied 9th inning (Week 11's MDP).", "",
+          "in a tied 9th inning (Week 11's MDP).",
+          "- **What a challenge is worth:** what holding it for the rest of the game is worth, compared with "
+          "having none: every wrong call it could still fix, since a challenge that succeeds is kept. At the "
+          "first pitch that is Week 11 §3's number, far more than the first pitch's own call (slides 12–14).", "",
           f"Across the season there were {n_opp:,} challenge opportunities (a called pitch went against a "
           "team that still had a challenge).", ""]
     for key in CAT_ORDER:

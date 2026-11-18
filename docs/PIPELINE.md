@@ -133,6 +133,8 @@ The checkpoint showcase and two data checks (November 2026):
 python scripts/24_challenge_count_check.py               # does the data have every 2026 challenge? (seconds, offline)
 python scripts/22_showcase_examples.py                   # real-game examples + slides for the checkpoint (a few minutes)
 python scripts/22_showcase_examples.py --video-links     # also look up each pitch's Savant video (internet)
+python scripts/25_first_challenge_value.py               # what "the first challenge is worth ~6 points" means (about a minute)
+python scripts/25_first_challenge_value.py --game 776543 --team NYY   # show a game you choose
 python scripts/23_umpire_roster_check.py                 # why there are more plate umpires than MLB's 76
 python scripts/23_umpire_roster_check.py --staff docs/mlb_umpire_staff_2026.txt   # exact split from a list of names
 python tests/test_challenge_extract.py                   # script 02 finds a review wherever the feed records it
@@ -143,9 +145,18 @@ python tests/test_challenge_extract.py                   # script 02 finds a rev
 | `22_showcase_examples.py` | `docs/SHOWCASE.md` (presenter notes: a glossary, a running order, every example in plain words with its replay link, the quiz answers), `docs/showcase_examples.csv`, `figures/showcase/` (about 55 slides, each with its data CSV) |
 | `23_umpire_roster_check.py` | `docs/UMPIRE_CHECK.md`, `docs/umpire_roster_check.csv` |
 | `24_challenge_count_check.py` | `docs/CHALLENGE_COUNT_CHECK.md`, `docs/challenge_count_check.csv` |
+| `25_first_challenge_value.py` | `figures/showcase/12_first_challenge_value`, `13_first_challenge_one_game`, `14_first_challenge_all_games` (each with its data CSV), `docs/FIRST_CHALLENGE_VALUE.md` (the explainer, with the example game call by call), `docs/first_challenge_team_games.csv` |
 
-Script 22 needs Weeks 9–11 (`models/production`, `models/winprob`, `models/mdp`) and reads
-the cohort, every raw pitch and the player bios (for names). It changes nothing upstream.
+Scripts 22 and 25 need Weeks 9–11 (`models/production`, `models/winprob`, `models/mdp`) and
+read the cohort, every raw pitch and the player bios (for names). They change nothing upstream.
+
+**What the first challenge is worth (script 25).** Week 11 §3's value of the first
+challenge (5.83 points) is what holding one challenge for the whole game is worth,
+compared with holding none. It is not the value of the first pitch, whose call is worth
+under 1 point. Script 25 checks it a second, independent way: it walks every real game
+forward, call by call, with one challenge used at Week 11's thresholds. The challenge is
+kept with probability p each time it is used. The average over all team-games has to
+match the MDP's number, and on the demo it does: 5.18 vs 5.16, and 5.76 vs 5.77 for two.
 
 **The challenge count.** The first version of script 02 looked for a review only on the
 pitch event. The Stats API can also record one on a separate event after the pitch, or on
